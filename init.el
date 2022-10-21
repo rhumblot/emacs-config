@@ -12,8 +12,6 @@
 ;; Set up the visible bell
 (setq visible-bell t)
 
-(load-theme 'doom-laserwave t)
-
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 ;; Package configuration
@@ -36,8 +34,31 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-;; Autocompletion
+;; package installer
 
+(defvar elpa-required-packages '(
+				 doom-themes
+				 ivy
+				 doom-modeline
+				 command-log-mode
+				 which-key
+				 ivy-rich
+				 counsel
+				 helpful
+				 auctex
+				 org
+				 magit
+				 conda
+                     )
+  "Default Packages")
+
+
+;; Make sure those are installed
+(dolist (pkg elpa-required-packages)
+  (when (not (package-installed-p pkg))
+    (package-install pkg)))
+
+;; Autocompletion
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper)
@@ -57,7 +78,6 @@
   (ivy-mode 1))
 
 (ivy-mode 1)
-
 
 (use-package doom-modeline
   :ensure t
@@ -151,8 +171,6 @@
  '(custom-safe-themes
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(inhibit-startup-screen t)
- '(org-agenda-files
-   '("u:/Travaux_Raphaël/Présentations/Présentations.org" "u:/Travaux_Raphaël/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux_Raphaël/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux_Raphaël/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux_Raphaël/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux_Raphaël/Simulations/Simulations.org" "u:/Travaux_Raphaël/to_do_list_divers.org"))
  '(package-selected-packages
    '(taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
 
@@ -207,4 +225,26 @@
 	(interactive "sWidth: \nsPath: \n")
 	(insert "\\includegraphics[width="width"\\linewidth]{"path"}"))))
 
+;; 
+
 (pdf-loader-install) ; On demand loading, leads to faster startup time
+
+;; magit installer
+
+(unless (package-installed-p 'magit)
+  (package-install 'magit))
+
+(require 'magit)
+
+;;Anaconda support
+
+(unless (package-installed-p 'conda)
+   (package-install 'conda))
+
+(require 'conda)
+
+(setq conda-env-home-directory "~/anaconda3")
+;;get current environment--from environment variable CONDA_DEFAULT_ENV
+(conda-env-activate 'getenv "CONDA_DEFAULT_ENV")
+;;(conda-env-autoactivate-mode t)
+(setq-default mode-line-format (cons mode-line-format '(:exec conda-env-current-name)))
