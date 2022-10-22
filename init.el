@@ -86,16 +86,16 @@
   :config
   (setq which-key-idle-delay 1))
 
-(use-package ivy-rich
-  :init
-  (ivy-rich-mode 1))
-
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
          ("C-x b" . counsel-ibuffer)
          ("C-x C-f" . counsel-find-file)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history)))
+
+(use-package ivy-rich
+  :init
+  (ivy-rich-mode 1))
 
 (use-package helpful
   :custom
@@ -107,7 +107,7 @@
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
-
+(use-package magit)
 
 ;; LATEX MODE SETUP
 
@@ -165,6 +165,7 @@
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
   (add-hook 'elpy-mode-hook 'flycheck-mode))
 
+(use-package conda)
 (require 'conda)
 ;; if you want interactive shell support, include:
 (conda-env-initialize-interactive-shells)
@@ -205,4 +206,5 @@
 	(interactive "sWidth: \nsPath: \n")
 	(insert "\\includegraphics[width="width"\\linewidth]{"path"}"))))
 
+(use-package pdf-tools)
 (pdf-loader-install) ; On demand loading, leads to faster startup time
