@@ -97,10 +97,12 @@
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
-(use-package magit)
+;;Magit
+(use-package magit
+   :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 ;; LATEX MODE SETUP
-
 (setq TeX-auto-save t)
 (setq TeX-parse-self t)
 (setq-default TeX-master nil)
@@ -109,80 +111,6 @@
 (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
 (setq reftex-plug-into-AUCTeX t)
 (setq TeX-PDF-mode t)
-
-
-;;Spellchecking
-(add-to-list 'exec-path "C:/msys64/mingw64/bin")
-(setq ispell-program-name "aspell")
-(require 'ispell)
-
-(add-to-list 'ispell-skip-region-alist
-             '("^\\[source" . "^----\n\n") ;; source exerpts
-         '("\\[\\[" . "\\]\\]")        ;; links
-         )
-
-;; ORGMODE SETUP
-
-(require 'org)
-(define-key global-map "\C-cl" 'org-store-link)
-(define-key global-map "\C-ca" 'org-agenda)
-(setq org-tag-alist '(("perso" . ?p) ("Computer" . ?c) ("Luli" . ?u)
-		      ("IOGS" . ?i) ("Amplitude" . ?a) ("Mail" . ?m)
-		      ("Bibliography" . ?u)))
-(setq org-log-done t)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(conda-anaconda-home "~/Anaconda3/envs")
- '(custom-safe-themes
-   '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
- '(inhibit-startup-screen t)
- '(org-agenda-files
-   '("u:/Travaux_Raphaël/Présentations/Présentations.org" "u:/Travaux_Raphaël/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux_Raphaël/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux_Raphaël/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux_Raphaël/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux_Raphaël/Simulations/Simulations.org" "u:/Travaux_Raphaël/to_do_list_divers.org"))
- '(package-selected-packages
-   '(taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
-
-
-;; ====================================
-;; Development Setup
-;; ====================================
-
-;; Enable Flycheck
-
-(when (require 'flycheck nil t)
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
-
-(use-package conda)
-(require 'conda)
-;; if you want interactive shell support, include:
-(conda-env-initialize-interactive-shells)
-;; if you want eshell support, include:
-(conda-env-initialize-eshell)
-;; if you want auto-activation (see below for details), include:
-;; (conda-env-autoactivate-mode t)
-
-(require 'python)
-(setq python-shell-interpreter "ipython")
-(setq python-shell-interpreter-args "--pylab")
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-
-;; (defun Latex-insert-unit (value unit)
-;;   "Prompts for value and unit and insert the latex command that corresponds to this value"
-;;   (interactive "sValue: \nsUnit: \n")
-;;   (insert "$\\unit{" value "}{" unit "}$ "))
-
-;; (defun Latex-include-graphics (width path)
-;;   "Prompts for figure width and figure path and include image at path with width = width * linewidth"
-;;   (interactive "sWidth: \nsPath: \n")
-;;   (insert "\\includegraphics[width="width"\\linewidth]{"path"}"))
 
 (with-eval-after-load "latex"
   (define-key LaTeX-mode-map (kbd "C-c u")
@@ -196,5 +124,63 @@
 	(interactive "sWidth: \nsPath: \n")
 	(insert "\\includegraphics[width="width"\\linewidth]{"path"}"))))
 
+
+;;Spellchecking
+(add-to-list 'exec-path "C:/msys64/mingw64/bin")
+(setq ispell-program-name "aspell")
+(require 'ispell)
+
+(add-to-list 'ispell-skip-region-alist
+             '("^\\[source" . "^----\n\n") ;; source exerpts
+         '("\\[\\[" . "\\]\\]")        ;; links
+         )
+
+;; ORGMODE SETUP
+(require 'org)
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-tag-alist '(("Perso" . ?p) ("Computer" . ?c) ("Luli" . ?u)
+		      ("IOGS" . ?i) ("Amplitude" . ?a) ("Mail" . ?m)
+		      ("Bibliography" . ?u)))
+(setq org-log-done t)
+
+;; Enable Flycheck
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+
+(use-package conda)
+(require 'conda)
+(conda-env-initialize-interactive-shells)
+(conda-env-initialize-eshell)
+
+(require 'python)
+(setq python-shell-interpreter "ipython")
+(setq python-shell-interpreter-args "--pylab")
+(custom-set-faces)
+
 (use-package pdf-tools)
 (pdf-loader-install) ; On demand loading, leads to faster startup time
+
+;;Projectile
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map))
+
+(use-package counsel-projectile
+  :config (counsel-projectile-mode))
+
+
+
+;;Custom set varible to switch to another .el file ASAP
+(custom-set-variables
+ '(conda-anaconda-home "~/Anaconda3/envs")
+ '(custom-safe-themes
+   '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
+ '(org-agenda-files
+   '("u:/Travaux_Raphaël/Présentations/Présentations.org" "u:/Travaux_Raphaël/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux_Raphaël/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux_Raphaël/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux_Raphaël/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux_Raphaël/Simulations/Simulations.org" "u:/Travaux_Raphaël/to_do_list_divers.org"))
+ '(package-selected-packages
+   '(counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
