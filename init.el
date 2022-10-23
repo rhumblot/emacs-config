@@ -124,19 +124,18 @@
 	(interactive "sWidth: \nsPath: \n")
 	(insert "\\includegraphics[width="width"\\linewidth]{"path"}"))))
 
-
-;;Spellchecking
-(add-to-list 'exec-path "C:/msys64/mingw64/bin")
-(setq ispell-program-name "aspell")
-(require 'ispell)
-
-(add-to-list 'ispell-skip-region-alist
-             '("^\\[source" . "^----\n\n") ;; source exerpts
-         '("\\[\\[" . "\\]\\]")        ;; links
-         )
-
 ;; ORGMODE SETUP
-(require 'org)
+
+(defun efs/org-mode-setup ()
+  (org-indent-mode)
+  (variable-pitch-mode 1)
+  (visual-line-mode 1))
+
+(use-package org
+  :config
+  (setq ots-ellipsis " ▾"
+	org-hide-emphasis-markers t))
+
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
 (setq org-tag-alist '(("Perso" . ?p) ("Computer" . ?c) ("Luli" . ?u)
