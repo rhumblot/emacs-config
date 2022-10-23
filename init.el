@@ -125,27 +125,31 @@
 	(insert "\\includegraphics[width="width"\\linewidth]{"path"}"))))
 
 ;; ORGMODE SETUP
-
 (defun efs/org-mode-setup ()
   (org-indent-mode)
   (variable-pitch-mode 1)
-  (auto-fill-mode 0)
   (visual-line-mode 1))
 
-(use-package org-bullets
-  :after org
-  :hook (org-mode .org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+;; Org Mode Configuration ------------------------------------------------------
 
 (use-package org
+  :hook (org-mode . efs/org-mode-setup)
   :config
   (setq org-ellipsis " ▾"))
 
-;; Enable Flycheck
-(when (require 'flycheck nil t)
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
+(use-package org-bullets
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+
+(defun efs/org-mode-visual-fill ()
+  (setq visual-fill-column-width 100
+        visual-fill-column-center-text t)
+  (visual-fill-column-mode 1))
+
+(use-package visual-fill-column
+  :hook (org-mode . efs/org-mode-visual-fill))
 
 ;; (use-package conda)
 ;; (require 'conda)
@@ -154,7 +158,6 @@
 ;; (conda-env-autoactivate-mode t)
 ;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
 ;;                                           (conda-env-activate-for-buffer))))
-
 (require 'python)
 (setq python-shell-interpreter "ipython")
 (setq python-shell-interpreter-args "--pylab")
@@ -191,4 +194,4 @@
  '(org-agenda-files
    '("u:/Travaux_Raphaël/Présentations/Présentations.org" "u:/Travaux_Raphaël/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux_Raphaël/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux_Raphaël/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux_Raphaël/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux_Raphaël/Simulations/Simulations.org" "u:/Travaux_Raphaël/to_do_list_divers.org"))
  '(package-selected-packages
-   '(org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
+   '(visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
