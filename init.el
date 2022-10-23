@@ -1,28 +1,8 @@
-;; Appearance customization
-
-(setq inhibit-startup-message t)
-
-(scroll-bar-mode -1)        ; Disable visible scrollbar
-(tool-bar-mode -1)          ; Disable the toolbar
-(tooltip-mode -1)           ; Disable tooltips
-(set-fringe-mode 10)        ; Give some breathing room
-
-(menu-bar-mode -1)            ; Disable the menu bar
-
-;; Set up the visible bell
-(setq visible-bell t)
-
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-;; Package configuration
-
 ;; Initialize package sources
 (require 'package)
-
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "http://elpa.gnu.org/packages/")))
-
 (package-initialize)
 (unless package-archive-contents
   (package-refresh-contents))
@@ -30,12 +10,35 @@
 ;; Initialize use-package on non-Linux platforms
 (unless (package-installed-p 'use-package)
    (package-install 'use-package))
-
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-;; Autocompletion
+;; Appearance customization
+(setq inhibit-startup-message t)
+(scroll-bar-mode -1)        ; Disable visible scrollbar
+(tool-bar-mode -1)          ; Disable the toolbar
+(tooltip-mode -1)           ; Disable tooltips
+(set-fringe-mode 10)        ; Give some breathing room
+(menu-bar-mode -1)            ; Disable the menu bar
 
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1))
+
+(use-package all-the-icons)
+(unless (package-installed-p 'doom-themes)
+  (all-the-icons-install-fonts))
+
+(use-package doom-themes
+  :init (load-theme 'doom-one t))
+
+;; Set up the visible bell
+(setq visible-bell t)
+
+;;Add escape as an escape key
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+;; Autocompletion and finding files
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper)
@@ -53,21 +56,18 @@
          ("C-d" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
-
 (ivy-mode 1)
 
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+         ("C-x b" . counsel-ibuffer)
+         ("C-x C-f" . counsel-find-file)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history)))
 
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
-
-(use-package all-the-icons)
-
-(use-package doom-themes
-  :init (load-theme 'doom-one t))
-
-(use-package command-log-mode)
+(use-package ivy-rich
+  :init
+  (ivy-rich-mode 1))
 
 (column-number-mode)
 (global-display-line-numbers-mode t)
@@ -86,16 +86,6 @@
   :config
   (setq which-key-idle-delay 1))
 
-(use-package counsel
-  :bind (("M-x" . counsel-M-x)
-         ("C-x b" . counsel-ibuffer)
-         ("C-x C-f" . counsel-find-file)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history)))
-
-(use-package ivy-rich
-  :init
-  (ivy-rich-mode 1))
 
 (use-package helpful
   :custom
