@@ -129,37 +129,44 @@
 (defun efs/org-mode-setup ()
   (org-indent-mode)
   (variable-pitch-mode 1)
+  (auto-fill-mode 0)
   (visual-line-mode 1))
+
+(use-package org-bullets
+  :after org
+  :hook (org-mode .org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 (use-package org
   :config
-  (setq ots-ellipsis " ▾"
-	org-hide-emphasis-markers t))
-
-(define-key global-map "\C-cl" 'org-store-link)
-(define-key global-map "\C-ca" 'org-agenda)
-(setq org-tag-alist '(("Perso" . ?p) ("Computer" . ?c) ("Luli" . ?u)
-		      ("IOGS" . ?i) ("Amplitude" . ?a) ("Mail" . ?m)
-		      ("Bibliography" . ?u)))
-(setq org-log-done t)
+  (setq org-ellipsis " ▾"))
 
 ;; Enable Flycheck
 (when (require 'flycheck nil t)
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
   (add-hook 'elpy-mode-hook 'flycheck-mode))
 
-(use-package conda)
-(require 'conda)
-(conda-env-initialize-interactive-shells)
-(conda-env-initialize-eshell)
+;; (use-package conda)
+;; (require 'conda)
+;; (conda-env-initialize-interactive-shells)
+;; (conda-env-initialize-eshell)
+;; (conda-env-autoactivate-mode t)
+;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
+;;                                           (conda-env-activate-for-buffer))))
 
 (require 'python)
 (setq python-shell-interpreter "ipython")
 (setq python-shell-interpreter-args "--pylab")
-(custom-set-faces)
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 
-(use-package pdf-tools)
-(pdf-loader-install) ; On demand loading, leads to faster startup time
+;; (use-package pdf-tools)
+;; (pdf-loader-install) ; On demand loading, leads to faster startup time
 
 ;;Projectile
 (use-package projectile
@@ -172,14 +179,16 @@
 (use-package counsel-projectile
   :config (counsel-projectile-mode))
 
-
-
 ;;Custom set varible to switch to another .el file ASAP
 (custom-set-variables
- '(conda-anaconda-home "~/Anaconda3/envs")
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(conda-anaconda-home "/c/ProgramData/Anaconda3")
  '(custom-safe-themes
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(org-agenda-files
    '("u:/Travaux_Raphaël/Présentations/Présentations.org" "u:/Travaux_Raphaël/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux_Raphaël/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux_Raphaël/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux_Raphaël/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux_Raphaël/Simulations/Simulations.org" "u:/Travaux_Raphaël/to_do_list_divers.org"))
  '(package-selected-packages
-   '(counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
+   '(org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
