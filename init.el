@@ -19,7 +19,30 @@
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
 (set-fringe-mode 10)        ; Give some breathing room
-(menu-bar-mode -1)            ; Disable the menu bar
+(menu-bar-mode -1)          ; Disable the menu bar
+(global-hl-line-mode +1)    ;Highlight current line
+(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+(add-to-list 'default-frame-alist '(fullscreen . fullheight))
+(column-number-mode)
+(global-display-line-numbers-mode t)
+
+(add-hook 'after-init-hook (lambda () (org-agenda nil "a")
+			     (delete-other-windows)))
+
+
+;; Disable line numbers for some modes
+(dolist (mode '(org-mode-hook
+                term-mode-hook
+                shell-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+
+;; Encodage en UTF-8
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-language-environment "UTF-8")
+(prefer-coding-system 'utf-8)
 
 (use-package doom-modeline
   :ensure t
@@ -69,17 +92,6 @@
   :init
   (ivy-rich-mode 1))
 
-(column-number-mode)
-(global-display-line-numbers-mode t)
-
-;; Disable line numbers for some modes
-(dolist (mode '(org-mode-hook
-                term-mode-hook
-                shell-mode-hook
-                eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-
 (use-package which-key
   :init (which-key-mode)
   :diminish which-key-mode
@@ -124,6 +136,36 @@
 	(interactive "sWidth: \nsPath: \n")
 	(insert "\\includegraphics[width="width"\\linewidth]{"path"}"))))
 
+;; Use pdf-tools to open PDF files
+(use-package pdf-tools)
+(pdf-loader-install) ; On demand loading, leads to faster startup time
+
+(setq TeX-view-program-selection '((output-pdf "PDF Tools"))
+      TeX-source-correlate-start-server t)
+
+;; Update PDF buffers after successful LaTeX runs
+(add-hook 'TeX-after-compilation-finished-functions
+           #'TeX-revert-document-buffer)
+
+;;Ispell
+(use-package flycheck-aspell)
+(setq ispell-program-name "C:\\msys64\\mingw64\\bin\\aspell.exe")
+(setq ispell-personal-dictionary "~/.emacs.d/.ispell")
+(require 'ispell)
+
+(use-package flyspell-correct
+  :ensure  t
+  :after flyspell
+  :bind (:map flyspell-mode-map
+          ("C-;" . flyspell-correct-at-point))
+  )
+
+(use-package flyspell-correct-ivy
+  :ensure t
+  :demand t
+  :after flyspell-correct
+  )
+
 ;; ORGMODE SETUP
 (defun efs/org-mode-setup ()
   (org-indent-mode)
@@ -131,11 +173,18 @@
   (visual-line-mode 1))
 
 ;; Org Mode Configuration ------------------------------------------------------
+ (defun scale-up-font ()
+   (text-scale-increase 2))
 
 (use-package org
-  :hook (org-mode . efs/org-mode-setup)
+  :hook ((org-mode . efs/org-mode-setup)
+	 (org-mode . scale-up-font))
+  
   :config
-  (setq org-ellipsis " ▾"))
+  (setq org-ellipsis " ▼"))
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-log-done t)
 
 (use-package org-bullets
   :after org
@@ -151,13 +200,16 @@
 (use-package visual-fill-column
   :hook (org-mode . efs/org-mode-visual-fill))
 
-;; (use-package conda)
-;; (require 'conda)
-;; (conda-env-initialize-interactive-shells)
-;; (conda-env-initialize-eshell)
-;; (conda-env-autoactivate-mode t)
-;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
-;;                                           (conda-env-activate-for-buffer))))
+(use-package conda)
+(require 'conda)
+;; if you want interactive shell support, include:
+(conda-env-initialize-interactive-shells)
+;; if you want eshell support, include:
+(conda-env-initialize-eshell)
+;; if you want auto-activation (see below for details), include:
+(conda-env-autoactivate-mode t)
+
+
 (require 'python)
 (setq python-shell-interpreter "ipython")
 (setq python-shell-interpreter-args "--pylab")
@@ -167,9 +219,6 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-
-;; (use-package pdf-tools)
-;; (pdf-loader-install) ; On demand loading, leads to faster startup time
 
 ;;Projectile
 (use-package projectile
@@ -188,10 +237,11 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(conda-anaconda-home "/c/ProgramData/Anaconda3")
+ '(conda-anaconda-home "~/Anaconda3")
  '(custom-safe-themes
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(org-agenda-files
    '("u:/Travaux_Raphaël/Présentations/Présentations.org" "u:/Travaux_Raphaël/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux_Raphaël/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux_Raphaël/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux_Raphaël/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux_Raphaël/Simulations/Simulations.org" "u:/Travaux_Raphaël/to_do_list_divers.org"))
  '(package-selected-packages
-   '(visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
+   '(flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
+ 
