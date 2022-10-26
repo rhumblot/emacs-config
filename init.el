@@ -241,7 +241,7 @@
  '(custom-safe-themes
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(org-agenda-files
-   '("u:/Travaux_Raphaël/Présentations/Présentations.org" "u:/Travaux_Raphaël/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux_Raphaël/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux_Raphaël/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux_Raphaël/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux_Raphaël/Simulations/Simulations.org" "u:/Travaux_Raphaël/to_do_list_divers.org"))
+   '("u:/Travaux/Présentations/Présentations.org" "u:/Travaux/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
    '(flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
  

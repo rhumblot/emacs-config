@@ -1,5 +1,6 @@
-personal_ws-1.1 fr 32 
+personal_ws-1.1 fr 37 
 APC
+Aerodiode
 BEE
 BNC
 CLOSED
@@ -8,6 +9,7 @@ DONE
 ENFSBS
 FC
 FC-APC
+HCC
 Humblot
 Implémentation
 Lasage
@@ -17,7 +19,10 @@ Q-switch
 RGA
 Raphaël
 SMA
+Scarell
+TODO
 Tasks
+USB
 WAITING
 connectique
 ext
