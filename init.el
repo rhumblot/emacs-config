@@ -124,6 +124,11 @@
 (setq reftex-plug-into-AUCTeX t)
 (setq TeX-PDF-mode t)
 
+(defmacro call-with-negative-argument (command)
+  `(lambda ()
+     (interactive)
+     (,command -1)))
+
 (with-eval-after-load "latex"
   (define-key LaTeX-mode-map (kbd "C-c u")
     (defun Latex-insert-unit (value unit)
@@ -131,10 +136,10 @@
       (interactive "sValue: \nsUnit: \n")
       (insert "$\\unit{" value "}{" unit "}$ ")))
     (define-key LaTeX-mode-map (kbd "C-c i")
-      (defun Latex-include-graphics (width path)
+      (defun Latex-include-graphics (width filename)
 	"Prompts for figure width and figure path and include image at path with width = width * linewidth"
-	(interactive "sWidth: \nsPath: \n")
-	(insert "\\includegraphics[width="width"\\linewidth]{"path"}"))))
+	(interactive "sWidth: \nfInsert file name: ")
+	(insert "\\includegraphics[width="width"\\linewidth]{"(file-relative-name filename)"}"))))
 
 ;; Use pdf-tools to open PDF files
 (use-package pdf-tools)
@@ -231,6 +236,29 @@
 (use-package counsel-projectile
   :config (counsel-projectile-mode))
 
+(defun my-insert-file-name (filename &optional args)
+    "Insert name of file FILENAME into buffer after point.
+  
+  Prefixed with \\[universal-argument], expand the file name to
+  its fully canocalized path.  See `expand-file-name'.
+  
+  Prefixed with \\[negative-argument], use relative path to file
+  name from current directory, `default-directory'.  See
+  `file-relative-name'.
+  
+  The default with no prefix is to insert the file name exactly as
+  it appears in the minibuffer prompt."
+    ;; Based on insert-file in Emacs -- ashawley 20080926
+    (interactive "*fInsert file name: \nP")
+    (cond ((eq '- args)
+           (insert (file-relative-name filename)))
+          ((not (null args))
+           (insert (expand-file-name filename)))
+          (t
+           (insert filename))))
+  
+(global-set-key "\C-cf" 'my-insert-file-name)
+
 ;;Custom set varible to switch to another .el file ASAP
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -241,7 +269,7 @@
  '(custom-safe-themes
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(org-agenda-files
-   '("u:/Travaux/Présentations/Présentations.org" "u:/Travaux/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/to_do_list_divers.org"))
+   '("//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Présentations/Présentations.org" "u:/Travaux/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
    '(flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
  
