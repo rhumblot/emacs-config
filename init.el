@@ -225,6 +225,11 @@
  ;; If there is more than one, they won't work right.
  )
 
+(use-package elpy
+  :ensure t
+  :init
+  (elpy-enable))
+
 ;;Projectile
 (use-package projectile
   :diminish projectile-mode
@@ -258,7 +263,27 @@
            (insert filename))))
   
 (global-set-key "\C-cf" 'my-insert-file-name)
+(defalias 'yes-or-no-p 'y-or-n-p)
 
+(defun add-dependency (file bool curr-point)
+  "Insert dependencies to file and insert creation command"
+  (interactive
+   (list
+    (read-file-name "*fInsert file name: \nP")
+    (y-or-n-p "Insert dependecies? ")
+    (point)))
+  (insert (file-relative-name file))
+  (if bool (save-excursion
+	     (end-of-buffer)
+	     (insert "\n\n")
+	     (insert (file-relative-name file))
+	     (insert " : "))))
+
+(defun add-add-dependency ()
+  (local-set-key (kbd "C-c C-d") 'add-dependency))
+
+(add-hook 'makefile-mode-hook #'add-add-dependency)
+  
 ;;Custom set varible to switch to another .el file ASAP
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -269,7 +294,7 @@
  '(custom-safe-themes
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(org-agenda-files
-   '("//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Présentations/Présentations.org" "u:/Travaux/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/to_do_list_divers.org"))
+   '("u:/Travaux/Présentations/Points tripartite/point_tripartite_novembre.org" "//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Présentations/Présentations.org" "u:/Travaux/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
    '(flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
- 
+
