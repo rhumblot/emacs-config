@@ -39,6 +39,7 @@
 
 
 ;; Encodage en UTF-8
+(setq inhibit-compacting-font-caches t)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-language-environment "UTF-8")
@@ -205,6 +206,9 @@
 (use-package visual-fill-column
   :hook (org-mode . efs/org-mode-visual-fill))
 
+;; workon home
+(setenv "WORKON_HOME" "C:/Users/rht/Anaconda3/envs/")
+
 (use-package conda)
 (require 'conda)
 ;; if you want interactive shell support, include:
@@ -213,6 +217,8 @@
 (conda-env-initialize-eshell)
 ;; if you want auto-activation (see below for details), include:
 (conda-env-autoactivate-mode t)
+
+(use-package pyvenv)
 
 
 (require 'python)
@@ -229,7 +235,7 @@
   :ensure t
   :init
   (elpy-enable))
-
+(setq elpy-rpc-virtualenv-path 'current)
 ;;Projectile
 (use-package projectile
   :diminish projectile-mode
