@@ -112,7 +112,8 @@
 
 ;;Magit
 (use-package magit
-   :custom
+  :commands (magit)
+  :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 ;; LATEX MODE SETUP
@@ -154,14 +155,16 @@
            #'TeX-revert-document-buffer)
 
 ;;Ispell
-(use-package flycheck-aspell)
+(use-package flycheck-aspell
+  :commands (ispell-buffer))
+
 (setq ispell-program-name "C:\\msys64\\mingw64\\bin\\aspell.exe")
 (setq ispell-personal-dictionary "~/.emacs.d/.ispell")
 (require 'ispell)
 
 (use-package flyspell-correct
   :ensure  t
-  :after flyspell
+  :commands (ispell-buffer)
   :bind (:map flyspell-mode-map
           ("C-;" . flyspell-correct-at-point))
   )
@@ -221,31 +224,23 @@
 (use-package pyvenv)
 
 
-(require 'python)
-(setq python-shell-interpreter "ipython")
-(setq python-shell-interpreter-args "--pylab")
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-
 (use-package elpy
+  :hook (python-mode)
   :ensure t
   :init
   (elpy-enable))
 (setq elpy-rpc-virtualenv-path 'current)
-;;Projectile
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  :bind-keymap
-  ("C-c p" . projectile-command-map))
 
-(use-package counsel-projectile
-  :config (counsel-projectile-mode))
+;; ;;Projectile
+;; (use-package projectile
+;;   :diminish projectile-mode
+;;   :config (projectile-mode)
+;;   :custom ((projectile-completion-system 'ivy))
+;;   :bind-keymap
+;;   ("C-c p" . projectile-command-map))
+
+;; (use-package counsel-projectile
+;;   :config (counsel-projectile-mode))
 
 (defun my-insert-file-name (filename &optional args)
     "Insert name of file FILENAME into buffer after point.
@@ -300,7 +295,7 @@
  '(custom-safe-themes
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(org-agenda-files
-   '("u:/Travaux/Présentations/Points tripartite/point_tripartite_novembre.org" "//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Présentations/Présentations.org" "u:/Travaux/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/to_do_list_divers.org"))
+   '("u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Présentations/rapport edom/suivi_1A.org" "u:/Travaux/Présentations/Points tripartite/point_tripartite_novembre.org" "//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Présentations/Présentations.org" "u:/Travaux/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
    '(flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
 
