@@ -4,8 +4,8 @@
                          ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "http://elpa.gnu.org/packages/")))
 (package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
+;; (unless package-archive-contents
+;;   (package-refresh-contents))
 
 ;; Initialize use-package on non-Linux platforms
 (unless (package-installed-p 'use-package)
@@ -221,14 +221,12 @@
 ;; if you want auto-activation (see below for details), include:
 (conda-env-autoactivate-mode t)
 
-(use-package pyvenv)
-
-
 (use-package elpy
   :hook (python-mode)
   :ensure t
   :init
   (elpy-enable))
+
 (setq elpy-rpc-virtualenv-path 'current)
 
 ;; ;;Projectile
@@ -297,5 +295,11 @@
  '(org-agenda-files
    '("u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Présentations/rapport edom/suivi_1A.org" "u:/Travaux/Présentations/Points tripartite/point_tripartite_novembre.org" "//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Présentations/Présentations.org" "u:/Travaux/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
-   '(flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package elpy conda)))
+   '(elpy pyenv flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda)))
 
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
