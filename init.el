@@ -1,4 +1,4 @@
-;; Initialize package sources
+; Initialize package sources
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
@@ -13,6 +13,14 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+;;; windows compatibility
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize))
+
+(setq shell-file-name "bash")
+(setq shell-command-switch "-c")
+(setenv "BASH_ENV" "~/.bashrc")
+
 ;; Appearance customization
 (setq inhibit-startup-message t)
 (scroll-bar-mode -1)        ; Disable visible scrollbar
@@ -26,9 +34,10 @@
 (column-number-mode)
 (global-display-line-numbers-mode t)
 
-(add-hook 'after-init-hook (lambda () (org-agenda nil "a")
-			     (delete-other-windows)))
-
+;; (use-package dashboard
+;;   :ensure t
+;;   :config
+;;   (dashboard-setup-startup-hook))
 
 ;; Disable line numbers for some modes
 (dolist (mode '(org-mode-hook
@@ -186,14 +195,20 @@
    (text-scale-increase 2))
 
 (use-package org
+  :pin org
+  :commands (org-capture org-agenda)
   :hook ((org-mode . efs/org-mode-setup)
 	 (org-mode . scale-up-font))
-  
   :config
-  (setq org-ellipsis " ▼"))
+  (setq org-ellipsis " ▼")
+  
+  (setq org-todo-keywords
+    '((sequence "TODO(t)" "|" "DONE(d!)")
+      (sequence "PLAN(p)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+  (setq org-log-done t))
+
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
-(setq org-log-done t)
 
 (use-package org-bullets
   :after org
@@ -209,17 +224,23 @@
 (use-package visual-fill-column
   :hook (org-mode . efs/org-mode-visual-fill))
 
-;; workon home
-(setenv "WORKON_HOME" "C:/Users/rht/Anaconda3/envs/")
-
-(use-package conda)
+(use-package conda
+  :ensure t)
 (require 'conda)
-;; if you want interactive shell support, include:
-(conda-env-initialize-interactive-shells)
-;; if you want eshell support, include:
-(conda-env-initialize-eshell)
 ;; if you want auto-activation (see below for details), include:
 (conda-env-autoactivate-mode t)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(conda-anaconda-home "~/Anaconda3")
+ '(custom-safe-themes
+   '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
+ '(org-agenda-files
+   '("u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Présentations/rapport edom/suivi_1A.org" "u:/Travaux/Présentations/Points tripartite/point_tripartite_novembre.org" "//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Présentations/Présentations.org" "u:/Travaux/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/to_do_list_divers.org"))
+ '(package-selected-packages
+   '(dashboard py-autopep8 blacken elpy pyenv flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda)))
 
 (use-package elpy
   :hook (python-mode)
@@ -227,9 +248,21 @@
   :init
   (elpy-enable))
 
-(setq elpy-rpc-virtualenv-path 'current)
+(use-package py-autopep8
+  :config
+  (setq py-autopep8-options '("--max-line-length=79" "--aggressive"))
+  :hook ((python-mode) . py-autopep8-mode)
+  )
 
-;; ;;Projectile
+(use-package flycheck
+  :hook python-mode)
+
+(add-hook 'after-init-hook #'global-flycheck-mode)
+(setq-default flycheck-emacs-lisp-load-path 'inherit)
+(setq flycheck-flake8-maximum-line-length 99)
+(setq flycheck-python-pylint-executable "~/Anaconda3/Scripts/pylint")
+
+;;Projectile
 ;; (use-package projectile
 ;;   :diminish projectile-mode
 ;;   :config (projectile-mode)
@@ -284,18 +317,6 @@
 (add-hook 'makefile-mode-hook #'add-add-dependency)
   
 ;;Custom set varible to switch to another .el file ASAP
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(conda-anaconda-home "~/Anaconda3")
- '(custom-safe-themes
-   '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
- '(org-agenda-files
-   '("u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Présentations/rapport edom/suivi_1A.org" "u:/Travaux/Présentations/Points tripartite/point_tripartite_novembre.org" "//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Présentations/Présentations.org" "u:/Travaux/ENFSBS_suivi_projet.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/to_do_list_divers.org"))
- '(package-selected-packages
-   '(elpy pyenv flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
