@@ -25,6 +25,9 @@
 (add-to-list 'exec-path "c:/Users/rht/AppData/Local/Programs/MiKTeX/miktex/bin/x64")
 (setq shell-command-switch "-ic")
 (setenv "BASH_ENV" "~/.bashrc")
+(let ((workon-home (expand-file-name "~/Anaconda3/envs")))
+  (setenv "WORKON_HOME" workon-home)
+  (setenv "VIRTUALENVWRAPPER_HOOK_DIR" workon-home))
 
 (let ((dir "emacs-backups"))
   (setq auto-save-file-name-transforms `(("\\([^/]*/\\)*\\([^/]*\\)\\'" ,(concat dir "/\\2")))
@@ -82,6 +85,7 @@
 
 ;;Add escape as an escape key
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+(global-set-key (kbd "M-é") 'insert-caps-accentuated-e)
 
 ;; Autocompletion and finding files
 (use-package ivy
@@ -153,7 +157,7 @@
 (setq-default flycheck-emacs-lisp-load-path 'inherit)
 (setq flycheck-flake8-maximum-line-length 99)
 (setq flycheck-python-pylint-executable "~/Anaconda3/Scripts/pylint")
-(setq elpy-rpc-python-command "~/Anaconda3/envs/elpy/pythonw.exe")
+;; (setq elpy-rpc-python-command "~/Anaconda3/envs/elpy/pythonw.exe")
 
 ;;(with-eval-after-load 'flycheck
 ;;  (setq flycheck-grammalecte-report-esp nil)
@@ -202,6 +206,11 @@
 	(interactive "sWidth: \nfInsert file name: ")
 	(insert "\\includegraphics[width="width"\\linewidth]{"(file-relative-name filename)"}"))))
 
+(defun insert-caps-accentuated-e ()
+  "Insert capital é at point"
+  (interactive)
+  (insert "É"))
+  
 
 ;; Use pdf-tools to open PDF files
 (use-package pdf-tools)
@@ -307,11 +316,6 @@
 (use-package visual-fill-column
   :hook (org-mode . efs/org-mode-visual-fill))
 
-(use-package conda
-  :ensure t)
-(require 'conda)
-;; if you want auto-activation (see below for details), include:
-(conda-env-autoactivate-mode t)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -320,27 +324,71 @@
  '(LaTeX-math-abbrev-prefix "&")
  '(LaTeX-math-list '(("M-p" "partial" "" 2202)))
  '(TeX-electric-sub-and-superscript t)
- '(conda-anaconda-home "~/Anaconda3")
+ '(conda-anaconda-home "~/Anaconda3/")
  '(custom-safe-themes
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
+ '(ispell-local-dictionary "fr")
  '(org-agenda-files
-   '("c:/Users/rht/projects/Bibliography/summary_sbs.org" "u:/Travaux/Suivi_manipulations/HERA/resume_manip.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/sprint_novembre.org" "c:/Users/rht/agenda.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Presentations/Presentations.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
+   '("c:/Users/rht/projects/Bibliography/summary_sbs.org" "u:/Travaux/Suivi_manipulations/HERA/resume_manip.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Presentations/Presentations.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
-   '(exec-path-from-shell elpy company-prescient ivy-prescient dashboard py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda)))
+   '(highlight-indent-guides python-black exec-path-from-shell company-prescient ivy-prescient dashboard py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda)))
 
-(use-package elpy
-  :hook (python-mode)
+;; (use-package elpy
+;;   :hook (python-mode)
+;;   :ensure t
+;;   :init
+;;   (elpy-enable))
+
+;; (use-package conda
+;;   :ensure t)
+
+;; (require 'conda)
+;; (setq conda-env-home-directory (expand-file-name "~/Anaconda3/"))
+;; if you want auto-activation (see below for details), include:
+;; (conda-env-autoactivate-mode t)
+
+;; (use-package anaconda-mode
+;;   :hook (python-mode)
+;;   ensure t
+;;   )
+
+;; (use-package company-anaconda
+;;   :hook (python-mode))
+
+;; (add-hook 'python-mode-hook 'anaconda-mode)
+
+
+;;TEST PYTHON
+(use-package python-black
   :ensure t
-  :init
-  (elpy-enable))
+  :bind (("C-c b" . python-black-buffer)))
 
+(use-package pyvenv
+  :ensure t
+  :config
+  (pyvenv-mode 1))
 
-;; bibliography management - zotra package https://github.com/mpedramfar/zotra
+(use-package anaconda-mode
+  :ensure t
+  :bind (("C-c C-x" . next-error))
+  :config
+  (require 'pyvenv)
+  (add-hook 'python-mode-hook 'anaconda-mode))
 
-(add-to-list 'load-path "~/.emacs.d/zotra")
-(require 'zotra)
-(setq zotra-cli-command '("node" "/path/to/zotra-cli/bin/index.js"))
+(use-package company-anaconda
+  :ensure t
+  :config
+  (eval-after-load "company"
+   '(add-to-list 'company-backends '(company-anaconda :with company-capf))))
 
+(use-package highlight-indent-guides
+  :ensure t
+  :config
+  (add-hook 'python-mode-hook 'highlight-indent-guides-mode)
+  (setq highlight-indent-guides-method 'character))
+
+;; (eval-after-load "company"
+;;   '(add-to-list 'company-backends 'company-anaconda))
 ;; (use-package py-autopep8
 ;;   :config
 ;;   (setq py-autopep8-options '("--max-line-length=79" "--aggressive"))
