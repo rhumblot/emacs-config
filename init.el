@@ -25,9 +25,10 @@
 (add-to-list 'exec-path "c:/Users/rht/AppData/Local/Programs/MiKTeX/miktex/bin/x64")
 (setq shell-command-switch "-ic")
 (setenv "BASH_ENV" "~/.bashrc")
-(let ((workon-home (expand-file-name "~/Anaconda3/envs")))
-  (setenv "WORKON_HOME" workon-home)
-  (setenv "VIRTUALENVWRAPPER_HOOK_DIR" workon-home))
+
+;; (let ((workon-home (expand-file-name "~/Anaconda3/envs")))
+;;   (setenv "WORKON_HOME" workon-home)
+;;   (setenv "VIRTUALENVWRAPPER_HOOK_DIR" workon-home))
 
 (let ((dir "emacs-backups"))
   (setq auto-save-file-name-transforms `(("\\([^/]*/\\)*\\([^/]*\\)\\'" ,(concat dir "/\\2")))
@@ -156,8 +157,7 @@
 (add-hook 'after-init-hook #'global-flycheck-mode)
 (setq-default flycheck-emacs-lisp-load-path 'inherit)
 (setq flycheck-flake8-maximum-line-length 99)
-(setq flycheck-python-pylint-executable "~/Anaconda3/Scripts/pylint")
-;; (setq elpy-rpc-python-command "~/Anaconda3/envs/elpy/pythonw.exe")
+;;(setq flycheck-python-pylint-executable "~/Anaconda3/Scripts/pylint")
 
 ;;(with-eval-after-load 'flycheck
 ;;  (setq flycheck-grammalecte-report-esp nil)
@@ -331,69 +331,12 @@
  '(org-agenda-files
    '("c:/Users/rht/projects/Bibliography/summary_sbs.org" "u:/Travaux/Suivi_manipulations/HERA/resume_manip.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Presentations/Presentations.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
-   '(highlight-indent-guides python-black exec-path-from-shell company-prescient ivy-prescient dashboard py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda)))
+   '(exec-path-from-shell company-prescient ivy-prescient dashboard flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda)))
 
-;; (use-package elpy
-;;   :hook (python-mode)
-;;   :ensure t
-;;   :init
-;;   (elpy-enable))
-
-;; (use-package conda
-;;   :ensure t)
-
-;; (require 'conda)
-;; (setq conda-env-home-directory (expand-file-name "~/Anaconda3/"))
-;; if you want auto-activation (see below for details), include:
-;; (conda-env-autoactivate-mode t)
-
-;; (use-package anaconda-mode
-;;   :hook (python-mode)
-;;   ensure t
-;;   )
-
-;; (use-package company-anaconda
-;;   :hook (python-mode))
-
-;; (add-hook 'python-mode-hook 'anaconda-mode)
-
-
-;;TEST PYTHON
-(use-package python-black
-  :ensure t
-  :bind (("C-c b" . python-black-buffer)))
-
-(use-package pyvenv
-  :ensure t
-  :config
-  (pyvenv-mode 1))
-
-(use-package anaconda-mode
-  :ensure t
-  :bind (("C-c C-x" . next-error))
-  :config
-  (require 'pyvenv)
-  (add-hook 'python-mode-hook 'anaconda-mode))
-
-(use-package company-anaconda
-  :ensure t
-  :config
-  (eval-after-load "company"
-   '(add-to-list 'company-backends '(company-anaconda :with company-capf))))
-
-(use-package highlight-indent-guides
-  :ensure t
-  :config
-  (add-hook 'python-mode-hook 'highlight-indent-guides-mode)
-  (setq highlight-indent-guides-method 'character))
-
-;; (eval-after-load "company"
-;;   '(add-to-list 'company-backends 'company-anaconda))
-;; (use-package py-autopep8
-;;   :config
-;;   (setq py-autopep8-options '("--max-line-length=79" "--aggressive"))
-;;   :hook ((python-mode) . py-autopep8-mode)
-;;   )
+(setenv "WORKON_HOME" "~/Anaconda3/envs")
+(pyvenv-mode 1)
+(add-hook 'python-mode-hook 'anaconda-mode)
+(add-hook 'python-mode-hook 'anaconda-eldoc-mode)
 
 ;;Projectile
 ;; (use-package projectile
@@ -402,7 +345,6 @@
 ;;   :custom ((projectile-completion-system 'ivy))
 ;;   :bind-keymap
 ;;   ("C-c p" . projectile-command-map))
-
 ;; (use-package counsel-projectile
 ;;   :config (counsel-projectile-mode))
 
