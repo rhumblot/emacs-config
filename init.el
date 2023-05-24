@@ -19,12 +19,9 @@
 
 (setq explicit-shell-file-name "c:/Program Files/Git/git-bash")
 (setq shell-file-name "bash")
-(add-to-list 'exec-path "c:/Program Files/Git/bin/sh.exe")
-(add-to-list 'exec-path "c:/Program Files/Git/bin/bash.exe")
-(add-to-list 'exec-path "c:/Program Files/Git/bin/git.exe")
-(add-to-list 'exec-path "c:/Users/rht/AppData/Local/Programs/MiKTeX/miktex/bin/x64")
-(setq shell-command-switch "-ic")
+(setq shell-command-switch "-c")
 (setenv "BASH_ENV" "~/.bashrc")
+
 
 ;; (let ((workon-home (expand-file-name "~/Anaconda3/envs")))
 ;;   (setenv "WORKON_HOME" workon-home)
@@ -56,7 +53,6 @@
 (dolist (mode '(org-mode-hook
                 term-mode-hook
                 shell-mode-hook
-		pdf-view-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
@@ -67,8 +63,6 @@
 (set-keyboard-coding-system 'utf-8)
 (set-language-environment "UTF-8")
 (prefer-coding-system 'utf-8)
-
-(use-package exec-path-from-shell)
 
 (use-package doom-modeline
   :ensure t
@@ -176,16 +170,12 @@
 (setq magit-git-executable '"C:\\Program Files\\Git\\mingw64\\bin\\git.exe")
 
 ;; LATEX MODE SETUP
-
-(defvar latex-extra-mode)
-(use-package latex-extra)
 (setq TeX-auto-save t)
 (setq TeX-parse-self t)
 (setq-default TeX-master nil)
 (add-hook 'LaTeX-mode-hook 'visual-line-mode)
 (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
 (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-(add-hook 'LaTeX-mode-hook 'latex-extra-mode)
 (setq reftex-plug-into-AUCTeX t)
 (setq TeX-PDF-mode t)
 
@@ -210,7 +200,6 @@
   "Insert capital é at point"
   (interactive)
   (insert "É"))
-  
 
 ;; Use pdf-tools to open PDF files
 (use-package pdf-tools)
@@ -227,28 +216,8 @@
 (use-package flycheck-aspell
   :commands (ispell-buffer))
 
-(setq ispell-program-name "c:/Program Files (x86)/Hunspell/bin/hunspell.exe")
+(setq ispell-program-name "C:\\msys64\\mingw64\\bin\\aspell.exe")
 (setq ispell-personal-dictionary "~/.emacs.d/.ispell")
- (setq ispell-local-dictionary-alist '(
-
-       (nil
-           "[[:alpha:]]"
-           "[^[:alpha:]]"
-           "[']"
-           t
-           ("-d" "en_US" "-p" "D:\\hunspell\\share\\hunspell\\personal.en")
-           nil
-           iso-8859-1)
-       ("francais"
-           "[[:alpha:]ÀÂÇÈÉÊËÎÏÔÙÛÜàâçèéêëîïôùûü]"
-           "[^[:alpha:]ÀÂÇÈÉÊËÎÏÔÙÛÜàâçèéêëîïôùûü]"
-           "[-']"
-           t
-           ("-d" "fr" "-p" 
-	    "D:\\hunspell\\share\\hunspell\\personal.fr")
-           nil
-           utf-8)
-        ))
 (require 'ispell)
 
 (use-package flyspell-correct
@@ -324,20 +293,36 @@
  '(LaTeX-math-abbrev-prefix "&")
  '(LaTeX-math-list '(("M-p" "partial" "" 2202)))
  '(TeX-electric-sub-and-superscript t)
- '(conda-anaconda-home "~/Anaconda3/")
+ '(conda-anaconda-home "~/Anaconda3")
  '(custom-safe-themes
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(ispell-local-dictionary "fr")
  '(org-agenda-files
-   '("c:/Users/rht/projects/Bibliography/summary_sbs.org" "u:/Travaux/Suivi_manipulations/HERA/resume_manip.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Presentations/Presentations.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/to_do_list_divers.org"))
+   '("u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/2023/Sprint_mai/recap.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/sprint_novembre.org" "c:/Users/rht/agenda.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Presentations/Presentations.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
-   '(exec-path-from-shell company-prescient ivy-prescient dashboard flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda)))
+   '(elpy company-prescient ivy-prescient dashboard py-autopep8 blacken pyenv flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
+ '(warning-suppress-types '((auto-save))))
 
-(setenv "WORKON_HOME" "~/Anaconda3/envs")
-(pyvenv-mode 1)
-(add-hook 'python-mode-hook 'anaconda-mode)
-(add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+(use-package elpy
+  :hook (python-mode)
+  :ensure t
+  :init
+  (elpy-enable))
 
+;; (use-package py-autopep8
+;;   :config
+;;   (setq py-autopep8-options '("--max-line-length=79" "--aggressive"))
+;;   :hook ((python-mode) . py-autopep8-mode)
+;;   )
+
+(use-package flycheck
+  :hook python-mode)
+
+(add-hook 'after-init-hook #'global-flycheck-mode)
+(setq-default flycheck-emacs-lisp-load-path 'inherit)
+(setq flycheck-flake8-maximum-line-length 99)
+(setq flycheck-python-pylint-executable "~/Anaconda3/Scripts/pylint")
+(setq elpy-rpc-python-command "~/Anaconda3/envs/elpy/pythonw.exe")
 ;;Projectile
 ;; (use-package projectile
 ;;   :diminish projectile-mode
@@ -399,4 +384,3 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-(put 'upcase-region 'disabled nil)
