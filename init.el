@@ -22,12 +22,8 @@
 (setq shell-command-switch "-c")
 (setenv "BASH_ENV" "~/.bashrc")
 
-
-;; (let ((workon-home (expand-file-name "~/Anaconda3/envs")))
-;;   (setenv "WORKON_HOME" workon-home)
-;;   (setenv "VIRTUALENVWRAPPER_HOOK_DIR" workon-home))
-
-(let ((dir "emacs-backups"))
+;; auto-saves in .emacs-backups folder
+(let ((dir ".emacs-backups"))
   (setq auto-save-file-name-transforms `(("\\([^/]*/\\)*\\([^/]*\\)\\'" ,(concat dir "/\\2")))
         backup-directory-alist `((".*" . ,dir))))
 
@@ -170,14 +166,20 @@
 (setq magit-git-executable '"C:\\Program Files\\Git\\mingw64\\bin\\git.exe")
 
 ;; LATEX MODE SETUP
+
 (setq TeX-auto-save t)
 (setq TeX-parse-self t)
 (setq-default TeX-master nil)
+(add-hook 'LaTeX-mode-hook #'latex-extra-mode)
 (add-hook 'LaTeX-mode-hook 'visual-line-mode)
 (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
 (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
 (setq reftex-plug-into-AUCTeX t)
 (setq TeX-PDF-mode t)
+
+'(LaTeX-math-abbrev-prefix "&")
+'(LaTeX-math-list '(("M-p" "partial" "" 2202)))
+'(TeX-electric-sub-and-superscript t)
 
 (defmacro call-with-negative-argument (command)
   `(lambda ()
@@ -216,10 +218,29 @@
 (use-package flycheck-aspell
   :commands (ispell-buffer))
 
-(setq ispell-program-name "C:\\msys64\\mingw64\\bin\\aspell.exe")
+(setq ispell-program-name "c:/Program Files (x86)/Hunspell/bin/hunspell.exe")
 (setq ispell-personal-dictionary "~/.emacs.d/.ispell")
+(setq ispell-local-dictionary-alist '(
+				      (nil
+				       "[[:alpha:]]"
+				       "[^[:alpha:]]"
+				       "[']"
+				       t
+				       ("-d" "en_US" "-p" "D:\\hunspell\\share\\hunspell\\personal.en")
+				       nil
+				       iso-8859-1)
+				      ("francais"
+				       "[[:alpha:]ÀÂÇÈÉÊËÎÏÔÙÛÜàâçèéêëîïôùûü]"
+				       "[^[:alpha:]ÀÂÇÈÉÊËÎÏÔÙÛÜàâçèéêëîïôùûü]"
+				       "[-']"
+				       t
+				       ("-d" "fr" "-p" 
+					"D:\\hunspell\\share\\hunspell\\personal.fr")
+				       nil
+				       utf-8)
+				      ))
 (require 'ispell)
-
+ 
 (use-package flyspell-correct
   :ensure  t
   :commands (ispell-buffer)
@@ -298,7 +319,7 @@
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(ispell-local-dictionary "fr")
  '(org-agenda-files
-   '("u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/2023/Sprint_mai/recap.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/sprint_novembre.org" "c:/Users/rht/agenda.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Presentations/Presentations.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
+   '("u:/Travaux/Presentations/Siegman_School/poster.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/2023/Sprint_mai/recap.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/sprint_novembre.org" "c:/Users/rht/agenda.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Presentations/Presentations.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
    '(elpy company-prescient ivy-prescient dashboard py-autopep8 blacken pyenv flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
  '(warning-suppress-types '((auto-save))))
