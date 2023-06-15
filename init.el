@@ -1,4 +1,6 @@
-; Initialize package sources
+;;; Initialize package sources
+
+;;; Code:
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
@@ -40,18 +42,50 @@
 (column-number-mode)
 (global-display-line-numbers-mode t)
 
-;; (use-package dashboard
-;;   :ensure t
-;;   :config
-;;   (dashboard-setup-startup-hook))
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook))
+;; Set the title
+(setq dashboard-banner-logo-title "Time to work")
+;; ;; (setq dashboard-startup-banner "~/.emacs.d/logo/Amplitude_RVB.png")
+;; Set the banner
+
+(setq dashboard-week-agenda t)
+(setq dashboard-icon-type 'all-the-icons) ;;
+(setq dashboard-set-file-icons t)
+(setq dashboard-set-file-icons t)
+(setq dashboard-set-navigator t)
+;; ;; Value can be
+;; ;; - nil to display no banner
+;; ;; - 'official which displays the official emacs logo
+;; ;; - 'logo which displays an alternative emacs logo
+;; ;; - 1, 2 or 3 which displays one of the text banners
+;; ;; - "path/to/your/image.gif", "path/to/your/image.png" or "path/to/your/text.txt" which displays whatever gif/image/text you would prefer
+;; ;; - a cons of '("path/to/your/image.png" . "path/to/your/text.txt")
+(setq dashboard-set-init-info t)
+
+(setq dashboard-footer-messages
+  '("En mode loque"
+    "Comme un mardi"
+    "Maitrise de la suite office (⌐□_□)"
+    "While any text editor can save your files, only Emacs can save your soul"
+    "Quelle vie on mène..."
+    "You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
+    "Whispers and light"
+   ))
+
+(use-package focus
+  :commands focus-mode)
 
 ;; Disable line numbers for some modes
 (dolist (mode '(org-mode-hook
+		image-mode
+		pdf-view-mode-hook
                 term-mode-hook
                 shell-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
 
 ;; Encodage en UTF-8
 (setq inhibit-compacting-font-caches t)
@@ -76,8 +110,9 @@
 
 ;;Add escape as an escape key
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+;; Add shortcut for accentuated é
 (global-set-key (kbd "M-é") 'insert-caps-accentuated-e)
-
+(global-set-key (kbd "C-<return>") 'dashboard-open)
 ;; Autocompletion and finding files
 (use-package ivy
   :diminish
@@ -105,9 +140,24 @@
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history)))
 
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :init (all-the-icons-ivy-rich-mode 1))
+
 (use-package ivy-rich
   :init
   (ivy-rich-mode 1))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode)
+  :config (setq all-the-icons-dired-monochrome nil))
+
+;; Whether display the icons
+(setq all-the-icons-ivy-rich-icon t)
+
+;; Whether display the colorful icons.
+;; It respects `all-the-icons-color-icons'.
+(setq all-the-icons-ivy-rich-color-icon t)
 
 (use-package ivy-prescient
   :after counsel
@@ -167,26 +217,29 @@
 
 ;; LATEX MODE SETUP
 
-(setq TeX-auto-save t)
-(setq TeX-parse-self t)
-(setq-default TeX-master nil)
-(add-hook 'LaTeX-mode-hook #'latex-extra-mode)
-(add-hook 'LaTeX-mode-hook 'visual-line-mode)
-(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-(add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-(setq reftex-plug-into-AUCTeX t)
-(setq TeX-PDF-mode t)
-
-'(LaTeX-math-abbrev-prefix "&")
-'(LaTeX-math-list '(("M-p" "partial" "" 2202)))
-'(TeX-electric-sub-and-superscript t)
-
 (defmacro call-with-negative-argument (command)
   `(lambda ()
      (interactive)
      (,command -1)))
 
 (with-eval-after-load "latex"
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq-default TeX-master nil)
+  (add-hook 'LaTeX-mode-hook #'latex-extra-mode)
+  (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (setq reftex-plug-into-AUCTeX t)
+  (setq TeX-PDF-mode t)
+  '(LaTeX-math-abbrev-prefix "&")
+  '(LaTeX-math-list '(("M-p" "partial" "" 2202)))
+  '(TeX-electric-sub-and-superscript t)
+  (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
+	TeX-source-correlate-start-server t)
+  ;; Update PDF buffers after successful LaTeX runs
+  (add-hook 'TeX-after-compilation-finished-functions
+            #'TeX-revert-document-buffer)
   (define-key LaTeX-mode-map (kbd "C-c u")
     (defun Latex-insert-unit (value unit)
       "Prompts for value and unit and insert the latex command that corresponds to this value"
@@ -204,15 +257,10 @@
   (insert "É"))
 
 ;; Use pdf-tools to open PDF files
-(use-package pdf-tools)
+(use-package pdf-tools
+  :defer)
 (pdf-loader-install) ; On demand loading, leads to faster startup time
 
-(setq TeX-view-program-selection '((output-pdf "PDF Tools"))
-      TeX-source-correlate-start-server t)
-
-;; Update PDF buffers after successful LaTeX runs
-(add-hook 'TeX-after-compilation-finished-functions
-           #'TeX-revert-document-buffer)
 
 ;;Ispell
 (use-package flycheck-aspell
@@ -319,16 +367,27 @@
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(ispell-local-dictionary "fr")
  '(org-agenda-files
-   '("u:/Travaux/Presentations/Siegman_School/poster.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/2023/Sprint_mai/recap.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/sprint_novembre.org" "c:/Users/rht/agenda.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "//serveur-prod/utilisateurs/rht/Travaux/Simulations/Developpement/Laser_tools/Lasertool.org" "u:/Travaux/Presentations/Presentations.org" "c:/Users/rht/Desktop/Contact.org" "u:/Travaux/Suivi_manipulations/Seeder_Aerodiode/Mesures_perf.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
+   '("u:/Travaux/Presentations/Siegman_School/poster.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/2023/Sprint_mai/recap.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
-   '(elpy company-prescient ivy-prescient dashboard py-autopep8 blacken pyenv flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
- '(warning-suppress-types '((auto-save))))
+   '(all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
+ '(warning-suppress-log-types '((comp) (comp) (comp) (auto-save)))
+ '(warning-suppress-types '((comp) (comp) (auto-save))))
 
 (use-package elpy
   :hook (python-mode)
   :ensure t
   :init
   (elpy-enable))
+
+ ;; Set correct Python interpreter
+  (setq pyvenv-post-activate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter (concat pyvenv-virtual-env "python"))
+		)))
+  (setq pyvenv-post-deactivate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter "python")
+		)))
 
 ;; (use-package py-autopep8
 ;;   :config
