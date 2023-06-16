@@ -48,7 +48,7 @@
   (dashboard-setup-startup-hook))
 ;; Set the title
 (setq dashboard-banner-logo-title "Time to work")
-;; ;; (setq dashboard-startup-banner "~/.emacs.d/logo/Amplitude_RVB.png")
+(setq dashboard-startup-banner "~/.emacs.d/logo/Amplitude_RVB.jpg")
 ;; Set the banner
 
 (setq dashboard-week-agenda t)
@@ -72,8 +72,18 @@
     "While any text editor can save your files, only Emacs can save your soul"
     "Quelle vie on mène..."
     "You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
-    "Whispers and light"
+    "Les barreaux lasers c'est comme les cyclistes, plus c'est dopé, plus il y a de gain."
    ))
+
+(require 'recentf)
+;; Save recentf at regular intervals
+(run-at-time (current-time) 300 'recentf-save-list)
+;; Exclude the recentf file itself
+(add-to-list 'recentf-exclude
+             (expand-file-name "~/.emacs.d/recentf")
+	     );;;
+(add-to-list 'recentf-exclude
+	     (expand-file-name "~/.emacs.d/bookmarks"))
 
 (use-package focus
   :commands focus-mode)
@@ -324,7 +334,10 @@
   (setq org-todo-keywords
     '((sequence "TODO(t)" "|" "DONE(d)")
       (sequence "PLAN(p)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
-  (setq org-log-done t))
+  (setq org-log-done t)
+  (setq org-archive-location ".emacs-backups/archives.org::")
+  (dolist (files org-agenda-files)
+  (add-to-list 'recentf-exclude files)))
 
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
@@ -464,3 +477,6 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+
+;;; init.el ends here
