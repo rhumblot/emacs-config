@@ -48,7 +48,7 @@
   (dashboard-setup-startup-hook))
 ;; Set the title
 (setq dashboard-banner-logo-title "Time to work")
-(setq dashboard-startup-banner "~/.emacs.d/logo/Amplitude_RVB.jpg")
+(setq dashboard-startup-banner "~/.emacs.d/logo/logo_amplitude_2.png")
 ;; Set the banner
 
 (setq dashboard-week-agenda t)
@@ -209,7 +209,10 @@
 (setq flycheck-flake8-maximum-line-length 99)
 ;;(setq flycheck-python-pylint-executable "~/Anaconda3/Scripts/pylint")
 
-;;(with-eval-after-load 'flycheck
+;; (use-package flycheck-grammalecte
+;;   :after flycheck
+;;   :config
+;;   (flycheck-grammalecte-setup))
 ;;  (setq flycheck-grammalecte-report-esp nil)
 ;; (setq grammalecte-python-package-directory "c:/Users/rht/Anaconda3/envs/grammalecte")
 ;; (require 'flycheck-grammalecte)
@@ -382,7 +385,7 @@
  '(org-agenda-files
    '("u:/Travaux/Presentations/Siegman_School/poster.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/2023/Sprint_mai/recap.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
-   '(all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flycheck-grammalecte flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
+   '(flycheck-grammalecte all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
  '(warning-suppress-log-types '((comp) (comp) (comp) (auto-save)))
  '(warning-suppress-types '((comp) (comp) (auto-save))))
 
