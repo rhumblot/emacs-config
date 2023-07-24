@@ -43,44 +43,45 @@
 (global-display-line-numbers-mode t)
 
 (use-package dashboard
-  :ensure t
-  :config
-  (dashboard-setup-startup-hook))
-;; Set the title
+:ensure t
+:config
+(dashboard-setup-startup-hook))
+;;Set the title
 (setq dashboard-banner-logo-title "Time to work")
 (setq dashboard-startup-banner "~/.emacs.d/logo/logo_amplitude_2.png")
-;; Set the banner
+;;Set the banner
 
 (setq dashboard-week-agenda t)
 (setq dashboard-icon-type 'all-the-icons) ;;
 (setq dashboard-set-file-icons t)
 (setq dashboard-set-file-icons t)
 (setq dashboard-set-navigator t)
-;; ;; Value can be
-;; ;; - nil to display no banner
-;; ;; - 'official which displays the official emacs logo
-;; ;; - 'logo which displays an alternative emacs logo
-;; ;; - 1, 2 or 3 which displays one of the text banners
-;; ;; - "path/to/your/image.gif", "path/to/your/image.png" or "path/to/your/text.txt" which displays whatever gif/image/text you would prefer
-;; ;; - a cons of '("path/to/your/image.png" . "path/to/your/text.txt")
+;; Value can be
+;; - nil to display no banner
+;; - 'official which displays the official emacs logo
+;; - 'logo which displays an alternative emacs logo
+;; - 1, 2 or 3 which displays one of the text banners
+;; - "path/to/your/image.gif", "path/to/your/image.png" or "path/to/your/text.txt" which displays whatever gif/image/text you would prefer
+;; - a cons of '("path/to/your/image.png" . "path/to/your/text.txt")
 (setq dashboard-set-init-info t)
 
 (setq dashboard-footer-messages
-  '("En mode loque"
-    "Comme un mardi"
-    "Maitrise de la suite office (⌐□_□)"
-    "While any text editor can save your files, only Emacs can save your soul"
-    "Quelle vie on mène..."
-    "You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
-    "Les barreaux lasers c'est comme les cyclistes, plus c'est dopé, plus il y a de gain."
-   ))
+'("En mode loque"
+  "Comme un mardi"
+  "Maitrise de la suite office (⌐□_□)"
+  "While any text editor can save your files, only Emacs can save your soul"
+  "Quelle vie on mène..."
+  "You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
+  "Les barreaux lasers c'est comme les cyclistes, plus c'est dopé, plus il y a de gain."
+  "Tout est pour le mieux dans le meilleur des mondes"
+  "When I see a bird that walks like a duck and swims like a duck and quacks like a duck, I call that bird a duck"
+  ))
 
-(require 'recentf)
 ;; Save recentf at regular intervals
 (run-at-time (current-time) 300 'recentf-save-list)
 ;; Exclude the recentf file itself
 (add-to-list 'recentf-exclude
-             (expand-file-name "~/.emacs.d/recentf")
+         (expand-file-name "~/.emacs.d/recentf")
 	     );;;
 (add-to-list 'recentf-exclude
 	     (expand-file-name "~/.emacs.d/bookmarks"))
@@ -122,7 +123,7 @@
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 ;; Add shortcut for accentuated é
 (global-set-key (kbd "M-é") 'insert-caps-accentuated-e)
-(global-set-key (kbd "C-<return>") 'dashboard-open)
+(global-set-key (kbd "C-& C-d") 'dashboard-open)
 ;; Autocompletion and finding files
 (use-package ivy
   :diminish
@@ -204,6 +205,7 @@
 (use-package flycheck
   :hook python-mode)
 
+
 (add-hook 'after-init-hook #'global-flycheck-mode)
 (setq-default flycheck-emacs-lisp-load-path 'inherit)
 (setq flycheck-flake8-maximum-line-length 99)
@@ -243,6 +245,7 @@
   (add-hook 'LaTeX-mode-hook 'visual-line-mode)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
   (setq reftex-plug-into-AUCTeX t)
   (setq TeX-PDF-mode t)
   '(LaTeX-math-abbrev-prefix "&")
@@ -276,8 +279,11 @@
 
 
 ;;Ispell
-(use-package flycheck-aspell
-  :commands (ispell-buffer))
+(use-package flyspell
+  :after flycheck
+  :init
+  (setq flyspell-sort-corrections nil)
+  )
 
 (setq ispell-program-name "c:/Program Files (x86)/Hunspell/bin/hunspell.exe")
 (setq ispell-personal-dictionary "~/.emacs.d/.ispell")
@@ -340,7 +346,8 @@
   (setq org-log-done t)
   (setq org-archive-location ".emacs-backups/archives.org::")
   (dolist (files org-agenda-files)
-  (add-to-list 'recentf-exclude files)))
+    (add-to-list 'recentf-exclude files)
+    ))
 
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
@@ -383,7 +390,7 @@
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(ispell-local-dictionary "fr")
  '(org-agenda-files
-   '("u:/Travaux/Presentations/Siegman_School/poster.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/2023/Sprint_mai/recap.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
+   '("u:/Travaux/Suivi_manipulations/Cellule_100Hz/SBS_100Hz.org" "u:/Travaux/Publications/SBS_high_energy/Publication_SBS_high_energy.org" "u:/Travaux/Autres/Design_Apollon/report_Apollon.org" "u:/Travaux/Presentations/Siegman_School/poster.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/2023/Sprint_mai/recap.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
    '(flycheck-grammalecte all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
  '(warning-suppress-log-types '((comp) (comp) (comp) (auto-save)))
