@@ -67,14 +67,13 @@
 
 (setq dashboard-footer-messages
 '("En mode loque"
-  "Comme un mardi"
   "Maitrise de la suite office (⌐□_□)"
   "While any text editor can save your files, only Emacs can save your soul"
-  "Quelle vie on mène..."
   "You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
   "Les barreaux lasers c'est comme les cyclistes, plus c'est dopé, plus il y a de gain."
-  "Tout est pour le mieux dans le meilleur des mondes"
   "When I see a bird that walks like a duck and swims like a duck and quacks like a duck, I call that bird a duck"
+  "Gaussian beam waist = lambda f / pi d"
+  "Top-hat beam waist = 1.22 lambda f / d"
   ))
 
 ;; Save recentf at regular intervals
@@ -390,7 +389,7 @@
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(ispell-local-dictionary "fr")
  '(org-agenda-files
-   '("u:/Travaux/Suivi_manipulations/Cellule_100Hz/SBS_100Hz.org" "u:/Travaux/Publications/SBS_high_energy/Publication_SBS_high_energy.org" "u:/Travaux/Autres/Design_Apollon/report_Apollon.org" "u:/Travaux/Presentations/Siegman_School/poster.org" "u:/Travaux/Reunions/Amplitude/Sprint/ENFSBS/2023/Sprint_mai/recap.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
+   '("u:/Travaux/Formations/formations.org" "u:/Travaux/anniversaires.org" "u:/Travaux/Suivi_manipulations/Cellule_100Hz/SBS_100Hz.org" "u:/Travaux/Publications/SBS_high_energy/Publication_SBS_high_energy.org" "u:/Travaux/Autres/Design_Apollon/report_Apollon.org" "u:/Travaux/Presentations/Siegman_School/poster.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
    '(flycheck-grammalecte all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
  '(warning-suppress-log-types '((comp) (comp) (comp) (auto-save)))
@@ -402,7 +401,9 @@
   :init
   (elpy-enable))
 
- ;; Set correct Python interpreter
+(add-to-list 'auto-mode-alist '("\\.pyx\\'" . python-mode))
+
+;; Set correct Python interpreter
   (setq pyvenv-post-activate-hooks
         (list (lambda ()
                 (setq python-shell-interpreter (concat pyvenv-virtual-env "python"))
