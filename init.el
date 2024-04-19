@@ -1,4 +1,4 @@
-;;; Initialize package sources
+;; Initialize package sources
 
 ;;; Code:
 (require 'package)
@@ -260,6 +260,28 @@
       "Prompts for value and unit and insert the latex command that corresponds to this value"
       (interactive "sValue: \nsUnit: \n")
       (insert "$\\unit{" value "}{" unit "}$ ")))
+
+  (defvar prefix-alist '((?1 "Latin letter" (lambda () (insert "\\nomenclature[a]") 'latin))
+			  (?2 "Greek letter" (lambda () (insert "\\nomenclature[g]") 'greek))
+			  (?3 "Superscript" (lambda () (insert "\\nomenclature[x]") 'super))
+			  (?4 "Subscript" (lambda () (insert "\\nomenclature[z]") 'sub)))
+    "List that associates number letters to descriptions and actions.")
+
+  (defun Latex-insert-prefix ()
+    "Lets the user choose the animal and takes the corresponding action.
+Returns whatever the action returns."
+    (interactive)
+    (let ((choice (read-char-choice (mapconcat (lambda (item) (format "%c: %s" (car item) (cadr item))) prefix-alist "; ")
+				    (mapcar #'car prefix-alist))))
+      (funcall (nth 2 (assoc choice prefix-alist)))))
+  
+  (define-key LaTeX-mode-map (kbd "C-c n")
+    (defun Latex-insert-nomenc (symbol meaning)
+      "Prompts for prefix, abreviation value and its meaning for insertion in the index"
+      (call-interactively  'Latex-insert-prefix)
+      (interactive "sSymbol: \nsMeaning: \n")
+      (insert "{" symbol "}{" meaning "}")))
+
     (define-key LaTeX-mode-map (kbd "C-c i")
       (defun Latex-include-graphics (width filename)
 	"Prompts for figure width and figure path and include image at path with width = width * linewidth"
@@ -382,14 +404,18 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(LaTeX-math-abbrev-prefix "&")
- '(LaTeX-math-list '(("M-p" "partial" "" 2202)))
+ '(LaTeX-math-list
+   '(("M-p" "partial" "" 2202)
+     ("M-r" "overrightarrow" "" nil)
+     ("M-:" "frac" "" nil)
+     ("M-c" "text{c.c.}" "" nil)))
  '(TeX-electric-sub-and-superscript t)
  '(conda-anaconda-home "~/Anaconda3")
  '(custom-safe-themes
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
  '(ispell-local-dictionary "fr")
  '(org-agenda-files
-   '("u:/Travaux/Formations/formations.org" "u:/Travaux/anniversaires.org" "u:/Travaux/Suivi_manipulations/Cellule_100Hz/SBS_100Hz.org" "u:/Travaux/Publications/SBS_high_energy/Publication_SBS_high_energy.org" "u:/Travaux/Autres/Design_Apollon/report_Apollon.org" "u:/Travaux/Presentations/Siegman_School/poster.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
+   '("u:/Travaux/Suivi_manipulations/HERA_session_2/resume_manip.org" "u:/Travaux/Autres/CHZ/chz.org" "c:/Users/rht/Local_work/manuscript/Manuscript.org" "u:/Travaux/Brevets/brevet.org" "u:/Travaux/Publications/publications_autres.org" "u:/Travaux/Formations/formations.org" "u:/Travaux/anniversaires.org" "u:/Travaux/Suivi_manipulations/Cellule_100Hz/SBS_100Hz.org" "u:/Travaux/Publications/SBS_high_energy/Publication_SBS_high_energy.org" "u:/Travaux/Presentations/Siegman_School/poster.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
  '(package-selected-packages
    '(flycheck-grammalecte all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
  '(warning-suppress-log-types '((comp) (comp) (comp) (auto-save)))
@@ -427,15 +453,61 @@
 (setq flycheck-flake8-maximum-line-length 99)
 (setq flycheck-python-pylint-executable "~/Anaconda3/Scripts/pylint")
 (setq elpy-rpc-python-command "~/Anaconda3/envs/elpy/pythonw.exe")
-;;Projectile
-;; (use-package projectile
-;;   :diminish projectile-mode
-;;   :config (projectile-mode)
-;;   :custom ((projectile-completion-system 'ivy))
-;;   :bind-keymap
-;;   ("C-c p" . projectile-command-map))
-;; (use-package counsel-projectile
-;;   :config (counsel-projectile-mode))
+
+;; Projectile
+(use-package projectile
+  :diminish projectile-mode
+  :ensure t
+  :config (projectile-mode)
+  (message "Projectile initialized")
+  (setq projectile-enable-caching t
+        projectile-globally-ignored-files
+        (append '(".aux"
+		  "bbl"
+		  "blg"
+                  "~")
+                projectile-globally-ignored-files)
+	projectile-globally-ignored-directories
+	(append '("*.emacs-backups*")
+		projectile-globally-ignored-directories))
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  (setq projectile-switch-project-action #'project-dired))
+
+(use-package counsel-projectile
+  :hook projectile-mode-hook
+  :config (counsel-projectile-mode))
+
+;; (with-eval-after-load 'counsel
+;;   (setq counsel-find-file-ignore-regexp "*.emacs-backups*")
+;;   (setq counsel-file-jump-args 
+;;      (list "."
+;;            "-not" "-path"  "*/\\.*"
+;;            "-not" "-path" "./*__pycache__/*"
+;;            "(" "-name" "*.el" "-o" "-path" "*.org" "-o" "-path" "**/Makefile" ")"
+;;            "-type" "f"
+;;            "-print")))
+
+;; (with-eval-after-load 'counsel
+;;   (advice-add 'counsel-rg
+;;               :around
+;;               (lambda (func &rest args)
+;;                 (cl-flet ((filter-func (code) (if (= code 2) 0 code)))
+;;                   (unwind-protect
+;;                       (progn (advice-add 'process-exit-status :filter-return #'filter-func)
+;;                              (apply func args))
+;;                     (advice-remove 'process-exit-status #'filter-func)))))
+;;   (setq ivy-re-builders-alist
+;;        '(
+;;          ...
+;;          (counsel-projectile-grep . ivy--regex-plus)
+;;          ...
+;;          (t . ivy--regex-fuzzy))))
+
+
+
 
 (defun my-insert-file-name (filename &optional args)
     "Insert name of file FILENAME into buffer after point.
@@ -479,7 +551,7 @@
   (local-set-key (kbd "C-c C-d") 'add-dependency))
 
 (add-hook 'makefile-mode-hook #'add-add-dependency)
-  
+(add-hook 'after-init-hook #'projectile-global-mode)  
 ;;Custom set varible to switch to another .el file ASAP
 
 (custom-set-faces
@@ -488,6 +560,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
 
 
 ;;; init.el ends here
