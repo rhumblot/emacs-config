@@ -11,7 +11,7 @@
 
 ;; Initialize use-package on non-Linux platforms
 (unless (package-installed-p 'use-package)
-   (package-install 'use-package))
+  (package-install 'use-package))
 (require 'use-package)
 (setq use-package-always-ensure t)
 
@@ -43,19 +43,22 @@
 (global-display-line-numbers-mode t)
 
 (use-package dashboard
-:ensure t
-:config
-(dashboard-setup-startup-hook))
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook)
+  (if (file-directory-p "u:/Travaux")
+      (setq dashboard-week-agenda t)
+    (setq dashboard-week-agenda nil))
+  (setq dashboard-icon-type 'all-the-icons) ;;
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-set-navigator t)
+)
 ;;Set the title
 (setq dashboard-banner-logo-title "Time to work")
 (setq dashboard-startup-banner "~/.emacs.d/logo/logo_amplitude_2.png")
 ;;Set the banner
 
-(setq dashboard-week-agenda t)
-(setq dashboard-icon-type 'all-the-icons) ;;
-(setq dashboard-set-file-icons t)
-(setq dashboard-set-file-icons t)
-(setq dashboard-set-navigator t)
 ;; Value can be
 ;; - nil to display no banner
 ;; - 'official which displays the official emacs logo
@@ -66,21 +69,21 @@
 (setq dashboard-set-init-info t)
 
 (setq dashboard-footer-messages
-'("En mode loque"
-  "Maitrise de la suite office (⌐□_□)"
-  "While any text editor can save your files, only Emacs can save your soul"
-  "You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
-  "Les barreaux lasers c'est comme les cyclistes, plus c'est dopé, plus il y a de gain."
-  "When I see a bird that walks like a duck and swims like a duck and quacks like a duck, I call that bird a duck"
-  "Gaussian beam waist = lambda f / pi d"
-  "Top-hat beam waist = 1.22 lambda f / d"
-  ))
+      '("En mode loque"
+	"Maitrise de la suite office (⌐□_□)"
+	"While any text editor can save your files, only Emacs can save your soul"
+	"You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
+	"Les barreaux lasers c'est comme les cyclistes, plus c'est dopé, plus il y a de gain."
+	"When I see a bird that walks like a duck and swims like a duck and quacks like a duck, I call that bird a duck"
+	"Gaussian beam waist = lambda f / pi d"
+	"Top-hat beam waist = 1.22 lambda f / d"
+	))
 
 ;; Save recentf at regular intervals
 (run-at-time (current-time) 300 'recentf-save-list)
 ;; Exclude the recentf file itself
 (add-to-list 'recentf-exclude
-         (expand-file-name "~/.emacs.d/recentf")
+             (expand-file-name "~/.emacs.d/recentf")
 	     );;;
 (add-to-list 'recentf-exclude
 	     (expand-file-name "~/.emacs.d/bookmarks"))
@@ -262,9 +265,9 @@
       (insert "$\\unit{" value "}{" unit "}$ ")))
 
   (defvar prefix-alist '((?1 "Latin letter" (lambda () (insert "\\nomenclature[a]") 'latin))
-			  (?2 "Greek letter" (lambda () (insert "\\nomenclature[g]") 'greek))
-			  (?3 "Superscript" (lambda () (insert "\\nomenclature[x]") 'super))
-			  (?4 "Subscript" (lambda () (insert "\\nomenclature[z]") 'sub)))
+			 (?2 "Greek letter" (lambda () (insert "\\nomenclature[g]") 'greek))
+			 (?3 "Superscript" (lambda () (insert "\\nomenclature[x]") 'super))
+			 (?4 "Subscript" (lambda () (insert "\\nomenclature[z]") 'sub)))
     "List that associates number letters to descriptions and actions.")
 
   (defun Latex-insert-prefix ()
@@ -282,11 +285,11 @@ Returns whatever the action returns."
       (interactive "sSymbol: \nsMeaning: \n")
       (insert "{" symbol "}{" meaning "}")))
 
-    (define-key LaTeX-mode-map (kbd "C-c i")
-      (defun Latex-include-graphics (width filename)
-	"Prompts for figure width and figure path and include image at path with width = width * linewidth"
-	(interactive "sWidth: \nfInsert file name: ")
-	(insert "\\includegraphics[width="width"\\linewidth]{"(file-relative-name filename)"}"))))
+  (define-key LaTeX-mode-map (kbd "C-c i")
+    (defun Latex-include-graphics (width filename)
+      "Prompts for figure width and figure path and include image at path with width = width * linewidth"
+      (interactive "sWidth: \nfInsert file name: ")
+      (insert "\\includegraphics[width="width"\\linewidth]{"(file-relative-name filename)"}"))))
 
 (defun insert-caps-accentuated-e ()
   "Insert capital é at point"
@@ -328,12 +331,12 @@ Returns whatever the action returns."
 				       utf-8)
 				      ))
 (require 'ispell)
- 
+
 (use-package flyspell-correct
   :ensure  t
   :commands (ispell-buffer)
   :bind (:map flyspell-mode-map
-          ("C-;" . flyspell-correct-at-point))
+              ("C-;" . flyspell-correct-at-point))
   )
 
 (use-package flyspell-correct-ivy
@@ -349,8 +352,8 @@ Returns whatever the action returns."
   (visual-line-mode 1))
 
 ;; Org Mode Configuration ------------------------------------------------------
- (defun scale-up-font ()
-   (text-scale-increase 2))
+(defun scale-up-font ()
+  (text-scale-increase 2))
 
 (use-package org
   :pin org
@@ -362,8 +365,8 @@ Returns whatever the action returns."
   (setq org-agenda-hide-tags-regexp "Scheduled")
   (setq org-agenda-scheduled-leaders '("" ""))
   (setq org-todo-keywords
-    '((sequence "TODO(t)" "|" "DONE(d)")
-      (sequence "PLAN(p)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+	'((sequence "TODO(t)" "|" "DONE(d)")
+	  (sequence "PLAN(p)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
   (setq org-log-done t)
   (setq org-archive-location ".emacs-backups/archives.org::")
   (dolist (files org-agenda-files)
@@ -410,14 +413,22 @@ Returns whatever the action returns."
      ("M-:" "frac" "" nil)
      ("M-c" "text{c.c.}" "" nil)))
  '(TeX-electric-sub-and-superscript t)
+ '(calendar-date-style 'european)
  '(conda-anaconda-home "~/Anaconda3")
  '(custom-safe-themes
    '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
+ '(diary-show-holidays-flag nil)
+ '(ignored-local-variable-values
+   '((languagetool-local-disabled-rules "CURRENCY" "WHITESPACE_RULE" "EN_UNPAIRED_BRACKETS" "ALONG_TIME" "EN_UNPAIRED_BRACKETS" "EN_UNPAIRED_BRACKETS" "EN_COMPOUNDS_TWO_STEP" "EN_UNPAIRED_BRACKETS")))
  '(ispell-local-dictionary "fr")
  '(org-agenda-files
-   '("u:/Travaux/Suivi_manipulations/HERA_session_2/resume_manip.org" "u:/Travaux/Autres/CHZ/chz.org" "c:/Users/rht/Local_work/manuscript/Manuscript.org" "u:/Travaux/Brevets/brevet.org" "u:/Travaux/Publications/publications_autres.org" "u:/Travaux/Formations/formations.org" "u:/Travaux/anniversaires.org" "u:/Travaux/Suivi_manipulations/Cellule_100Hz/SBS_100Hz.org" "u:/Travaux/Publications/SBS_high_energy/Publication_SBS_high_energy.org" "u:/Travaux/Presentations/Siegman_School/poster.org" "u:/Travaux/Simulations/Simulations.org" "u:/Travaux/Reunions/reunion.org" "c:/Users/rht/Desktop/Documentation.org" "u:/Travaux/Reunions/Amplitude/RetD/planning.org" "u:/Travaux/Suivi_manipulations/HERA/HERA.org" "u:/Travaux/Suivi_manipulations/Cellule_V1/Experiments_cell_V1.org" "u:/Travaux/Suivi_manipulations/CR_RGA_YAG/Source_laser_ENFSBS.org" "u:/Travaux/to_do_list_divers.org"))
+   '("u:/Travaux/Projets/Demo_sbs_double_pass/Demo_sbs_double_pass.org" "u:/Travaux/to_do_list_divers.org" "u:/Travaux/Suivi_manipulations/Cellule_100Hz/SBS_100Hz.org" "c:/Users/rht/Local_work/manuscript/Manuscript.org"))
  '(package-selected-packages
-   '(flycheck-grammalecte all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
+   '(languagetool flycheck-languagetool flycheck-grammalecte all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
+ '(safe-local-variable-values
+   '((languagetool-local-disabled-rules "ALLOW_TO")
+     (languagetool-local-disabled-rules "EN_UNPAIRED_QUOTES" "UPPERCASE_SENTENCE_START" "COMMA_COMPOUND_SENTENCE_2" "UPPERCASE_SENTENCE_START" "UPPERCASE_SENTENCE_START" "CURRENCY" "EN_UNPAIRED_QUOTES" "UPPERCASE_SENTENCE_START" "EN_UNPAIRED_QUOTES" "EN_UNPAIRED_QUOTES" "EN_UNPAIRED_QUOTES" "EN_WORD_COHERENCY" "NON_STANDARD_WORD" "CURRENCY" "UPPERCASE_SENTENCE_START" "EN_WORD_COHERENCY" "CURRENCY" "CURRENCY" "NON_STANDARD_WORD" "CURRENCY" "WHITESPACE_RULE" "WHITESPACE_RULE" "WHITESPACE_RULE" "CURRENCY" "NON_STANDARD_WORD" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "WHITESPACE_RULE")
+     (languagetool-local-disabled-rules "ALLOW_TO" "EN_UNPAIRED_BRACKETS" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE" "CURRENCY")))
  '(warning-suppress-log-types '((comp) (comp) (comp) (auto-save)))
  '(warning-suppress-types '((comp) (comp) (auto-save))))
 
@@ -425,19 +436,52 @@ Returns whatever the action returns."
   :hook (python-mode)
   :ensure t
   :init
-  (elpy-enable))
+  (elpy-enable)
+  (define-key python-mode-map (kbd "C-c M-m")
+    (defun python-init-script (doc)
+      "Insert the script documentation, import typical packages and writes the main fun"
+      (interactive "sDocumentation: ")
+      (insert "\"\"\" "doc"
+Author: Raphaël Humblot
+Date:")
+      (insert (format-time-string "%Y-%m-%d %H:%M:%S"))
+      (insert "\"\"\"
+
+import os
+from pathlib import Path
+import numpy as np
+import numpy.typing as npt
+import matplotlib.pyplot as plt
+
+def main():
+    \"\"\""doc"\"\"\"
+
+if __name__==\"__main__\":
+    main()
+"
+    )))
+  (define-key python-mode-map (kbd "C-c M-p")
+    (defun python-insert-current-path ()
+      (interactive)
+      "Insert Path object to current wd"
+      (insert "Path(__file__).parent")))
+  (define-key python-mode-map (kbd "C-c M-f")
+    (defun python-insert-figure-save (name)
+      "Insert fig.savefig command"
+      (interactive "sFigure name: ")
+      (insert "fig.savefig(Path(__file__).parent / \""name".pdf\", dpi=400, bbox_inches=\"tight\")"))))
 
 (add-to-list 'auto-mode-alist '("\\.pyx\\'" . python-mode))
 
 ;; Set correct Python interpreter
-  (setq pyvenv-post-activate-hooks
-        (list (lambda ()
-                (setq python-shell-interpreter (concat pyvenv-virtual-env "python"))
-		)))
-  (setq pyvenv-post-deactivate-hooks
-        (list (lambda ()
-                (setq python-shell-interpreter "python")
-		)))
+(setq pyvenv-post-activate-hooks
+      (list (lambda ()
+              (setq python-shell-interpreter (concat pyvenv-virtual-env "python"))
+	      )))
+(setq pyvenv-post-deactivate-hooks
+      (list (lambda ()
+              (setq python-shell-interpreter "python")
+	      )))
 
 ;; (use-package py-autopep8
 ;;   :config
@@ -470,6 +514,9 @@ Returns whatever the action returns."
 	projectile-globally-ignored-directories
 	(append '("*.emacs-backups*")
 		projectile-globally-ignored-directories))
+  (if (file-directory-p "u:/Travaux")
+      (setq projectile-project-search-path
+	    (append '("u:/Travaux/Projets") projectile-project-search-path)))
   :custom ((projectile-completion-system 'ivy))
   :bind-keymap
   ("C-c p" . projectile-command-map)
@@ -480,37 +527,8 @@ Returns whatever the action returns."
   :hook projectile-mode-hook
   :config (counsel-projectile-mode))
 
-;; (with-eval-after-load 'counsel
-;;   (setq counsel-find-file-ignore-regexp "*.emacs-backups*")
-;;   (setq counsel-file-jump-args 
-;;      (list "."
-;;            "-not" "-path"  "*/\\.*"
-;;            "-not" "-path" "./*__pycache__/*"
-;;            "(" "-name" "*.el" "-o" "-path" "*.org" "-o" "-path" "**/Makefile" ")"
-;;            "-type" "f"
-;;            "-print")))
-
-;; (with-eval-after-load 'counsel
-;;   (advice-add 'counsel-rg
-;;               :around
-;;               (lambda (func &rest args)
-;;                 (cl-flet ((filter-func (code) (if (= code 2) 0 code)))
-;;                   (unwind-protect
-;;                       (progn (advice-add 'process-exit-status :filter-return #'filter-func)
-;;                              (apply func args))
-;;                     (advice-remove 'process-exit-status #'filter-func)))))
-;;   (setq ivy-re-builders-alist
-;;        '(
-;;          ...
-;;          (counsel-projectile-grep . ivy--regex-plus)
-;;          ...
-;;          (t . ivy--regex-fuzzy))))
-
-
-
-
 (defun my-insert-file-name (filename &optional args)
-    "Insert name of file FILENAME into buffer after point.
+  "Insert name of file FILENAME into buffer after point.
   
   Prefixed with \\[universal-argument], expand the file name to
   its fully canocalized path.  See `expand-file-name'.
@@ -521,17 +539,33 @@ Returns whatever the action returns."
   
   The default with no prefix is to insert the file name exactly as
   it appears in the minibuffer prompt."
-    ;; Based on insert-file in Emacs -- ashawley 20080926
-    (interactive "*fInsert file name: \nP")
-    (cond ((eq '- args)
-           (insert (file-relative-name filename)))
-          ((not (null args))
-           (insert (expand-file-name filename)))
-          (t
-           (insert filename))))
-  
+  ;; Based on insert-file in Emacs -- ashawley 20080926
+  (interactive "*fInsert file name: \nP")
+  (cond ((eq '- args)
+         (insert (file-relative-name filename)))
+        ((not (null args))
+         (insert (expand-file-name filename)))
+        (t
+         (insert filename))))
+
 (global-set-key "\C-cf" 'my-insert-file-name)
 (defalias 'yes-or-no-p 'y-or-n-p)
+
+(use-package languagetool
+  :ensure t
+  :defer t
+  :commands (languagetool-check
+             languagetool-clear-suggestions
+             languagetool-correct-at-point
+             languagetool-correct-buffer
+             languagetool-set-language
+             languagetool-server-mode
+             languagetool-server-start
+             languagetool-server-stop)
+  :config
+  (setq languagetool-java-arguments '("-Dfile.encoding=UTF-8")
+        languagetool-console-command "~/.LanguageTool/languagetool-commandline.jar"
+        languagetool-server-command "~/.LanguageTool/languagetool-server.jar"))
 
 (defun add-dependency (file bool curr-point)
   "Insert dependencies to file and insert creation command"
@@ -545,11 +579,24 @@ Returns whatever the action returns."
 	     (end-of-buffer)
 	     (insert "\n\n")
 	     (insert (file-relative-name file))
-	     (insert " : "))))
+
+
+	     (defun suppress-messages (func &rest args)
+	       "Suppress message output from FUNC."
+	       ;; Some packages are too noisy.
+	       ;; https://superuser.com/questions/669701/emacs-disable-some-minibuffer-messages
+	       (cl-flet ((silence (&rest args1) (ignore)))
+		 (advice-add 'message :around #'silence)
+		 (unwind-protect
+		     (apply func args)
+		   (advice-remove 'message #'silence))))
+
+	     ;; Suppress "Cleaning up the recentf...done (0 removed)"
+	     (advice-add 'recentf-cleanup :around #'suppress-messages)(insert " : "))))
 
 (defun add-add-dependency ()
   (local-set-key (kbd "C-c C-d") 'add-dependency))
-
+(setq org-agenda-include-diary t)
 (add-hook 'makefile-mode-hook #'add-add-dependency)
 (add-hook 'after-init-hook #'projectile-global-mode)  
 ;;Custom set varible to switch to another .el file ASAP
