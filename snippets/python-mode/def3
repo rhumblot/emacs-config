@@ -1,0 +1,23 @@
+# -*- mode: snippet -*-
+# name: def3
+# key: def3
+# --
+
+def ${1:fun_name}(${2:Arg1}: ${3:TypeArg1}, ${4:Arg2}: ${5:TypeArg2}, ${6:Arg3}: ${7:TypeArg3}) -> ${8:ReturnType}:
+    """
+    ${9:Description}
+
+    Arguments
+    ----
+    $2: $3
+        ${10: Description of Arg1}
+    $4: $5
+        ${11: Description of Arg2}
+    $6: $7
+        ${12: Description of Arg2}
+
+    Return
+    ----
+    $0
+    """
+    pass

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: insert-subplots
+# key: fig
+# --
+
+fig, ax = plt.subplots()
+ax: plt.Axes

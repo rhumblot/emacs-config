@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: python_for
+# key: for
+# --
+
+for ${1:element} in ${2:ArrayLike}:
+    $0

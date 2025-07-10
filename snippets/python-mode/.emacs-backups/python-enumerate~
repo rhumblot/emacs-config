@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: python-enumerate
+# key: <en
+# --
+
+for ${1:ind}, ${2:element} in ${3:ArrayLike}:
+    $0

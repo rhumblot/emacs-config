@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: appro
+# key: appro
+# --
+pytest.approx(${1:var})
+$0

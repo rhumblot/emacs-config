@@ -5,7 +5,10 @@
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "http://elpa.gnu.org/packages/")))
+
 (package-initialize)
+
+(setq package-check-signature t)
 ;; (unless package-archive-contents
 ;;   (package-refresh-contents))
 
@@ -18,6 +21,9 @@
 ;;; windows compatibility
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
+
+(setq desktop-save 'ask)
+(setq confirm-kill-emacs #'y-or-n-p)
 
 (setq explicit-shell-file-name "c:/Program Files/Git/git-bash")
 (setq shell-file-name "bash")
@@ -57,15 +63,8 @@
 ;;Set the title
 (setq dashboard-banner-logo-title "Time to work")
 (setq dashboard-startup-banner "~/.emacs.d/logo/logo_amplitude_2.png")
-;;Set the banner
 
-;; Value can be
-;; - nil to display no banner
-;; - 'official which displays the official emacs logo
-;; - 'logo which displays an alternative emacs logo
-;; - 1, 2 or 3 which displays one of the text banners
-;; - "path/to/your/image.gif", "path/to/your/image.png" or "path/to/your/text.txt" which displays whatever gif/image/text you would prefer
-;; - a cons of '("path/to/your/image.png" . "path/to/your/text.txt")
+;;Set the banner
 (setq dashboard-set-init-info t)
 
 (setq dashboard-footer-messages
@@ -93,12 +92,13 @@
 
 ;; Disable line numbers for some modes
 (dolist (mode '(org-mode-hook
-		image-mode
 		pdf-view-mode-hook
                 term-mode-hook
                 shell-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+(add-hook 'image-mode-hook (lambda () (display-line-numbers-mode -1)))
 
 ;; Encodage en UTF-8
 (setq inhibit-compacting-font-caches t)
@@ -164,7 +164,6 @@
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode)
   :config (setq all-the-icons-dired-monochrome nil))
-
 ;; Whether display the icons
 (setq all-the-icons-ivy-rich-icon t)
 
@@ -207,22 +206,30 @@
 (use-package flycheck
   :hook python-mode)
 
+(require 'flycheck)
+(flycheck-define-checker grammalecte
+  "A French grammar checker using Grammalecte."
+  :command ("C:/Users/rht/Anaconda3/envs/data/python.exe"
+            "c:/Users/rht/.emacs.d/Grammalecte/grammalecte_flycheck.py" source)
+  :standard-input t
+  :error-patterns
+    (
+   ;; warning avec plage de colonnes
+   (warning line-start "<stdin>:" line ":" column "-" end-column ": warning: " (message) line-end)
+   (error   line-start "<stdin>:" line ":" column "-" end-column ": error: " (message) line-end)
+  )
+  :modes (text-mode markdown-mode latex-mode org-mode))
+
+(add-to-list 'flycheck-checkers 'grammalecte)
+
+(flycheck-add-next-checker 'grammalecte 'tex-chktex)
+
+(add-hook 'text-mode-hook #'flycheck-mode)
+(add-hook 'latex-mode-hook #'flycheck-mode)
 
 (add-hook 'after-init-hook #'global-flycheck-mode)
 (setq-default flycheck-emacs-lisp-load-path 'inherit)
-(setq flycheck-flake8-maximum-line-length 99)
-;;(setq flycheck-python-pylint-executable "~/Anaconda3/Scripts/pylint")
-
-;; (use-package flycheck-grammalecte
-;;   :after flycheck
-;;   :config
-;;   (flycheck-grammalecte-setup))
-;;  (setq flycheck-grammalecte-report-esp nil)
-;; (setq grammalecte-python-package-directory "c:/Users/rht/Anaconda3/envs/grammalecte")
-;; (require 'flycheck-grammalecte)
-;;  (add-to-list 'flycheck-grammalecte-enabled-modes 'fountain-mode)
-;;  (grammalecte-download-grammalecte)
-;;  (flycheck-grammalecte-setup))
+(setq flycheck-flake8-maximum-line-length 79)
 
 ;;Magit
 (use-package magit
@@ -246,8 +253,11 @@
   (add-hook 'LaTeX-mode-hook #'latex-extra-mode)
   (add-hook 'LaTeX-mode-hook 'visual-line-mode)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook #'yas-minor-mode)
   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
   (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+  
+  (setq flycheck-chktexrc "~/.chktexrc")
   (setq reftex-plug-into-AUCTeX t)
   (setq TeX-PDF-mode t)
   '(LaTeX-math-abbrev-prefix "&")
@@ -295,6 +305,22 @@ Returns whatever the action returns."
   "Insert capital é at point"
   (interactive)
   (insert "É"))
+
+(defun Create-new-LaTeX-document (destination)
+  "Copie récursivement le contenu d'un dossier source fixe vers DESTINATION."
+  (interactive
+   (list (read-directory-name "Coller le contenu du dossier fixe ici : ")))
+  (let ((source "u:/Autres/Template/Document_latex/")) ;; Remplace ceci par ton dossier fixe
+    (unless (file-directory-p source)
+      (error "Le dossier source n'existe pas ou n'est pas un répertoire"))
+    (unless (file-directory-p destination)
+      (make-directory destination t))
+    (dolist (file (directory-files source t "^[^.]")) ; ignore . et ..
+      (let ((target (expand-file-name (file-name-nondirectory file) destination)))
+        (if (file-directory-p file)
+            (copy-directory file target)
+          (copy-file file target t))))
+    (message "Copie terminée vers %s" destination)))
 
 ;; Use pdf-tools to open PDF files
 (use-package pdf-tools
@@ -406,12 +432,16 @@ Returns whatever the action returns."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(LaTeX-electric-left-right-brace t)
  '(LaTeX-math-abbrev-prefix "&")
  '(LaTeX-math-list
    '(("M-p" "partial" "" 2202)
      ("M-r" "overrightarrow" "" nil)
      ("M-:" "frac" "" nil)
-     ("M-c" "text{c.c.}" "" nil)))
+     ("M-c" "text{c.c.}" "" nil)
+     ("M-." "dot" "" 15)
+     ("SPC" "&" "" nil)))
+ '(TeX-electric-math '("$" . "$"))
  '(TeX-electric-sub-and-superscript t)
  '(calendar-date-style 'european)
  '(conda-anaconda-home "~/Anaconda3")
@@ -422,11 +452,16 @@ Returns whatever the action returns."
    '((languagetool-local-disabled-rules "CURRENCY" "WHITESPACE_RULE" "EN_UNPAIRED_BRACKETS" "ALONG_TIME" "EN_UNPAIRED_BRACKETS" "EN_UNPAIRED_BRACKETS" "EN_COMPOUNDS_TWO_STEP" "EN_UNPAIRED_BRACKETS")))
  '(ispell-local-dictionary "fr")
  '(org-agenda-files
-   '("u:/Travaux/Projets/Demo_sbs_double_pass/Demo_sbs_double_pass.org" "u:/Travaux/to_do_list_divers.org" "u:/Travaux/Suivi_manipulations/Cellule_100Hz/SBS_100Hz.org" "c:/Users/rht/Local_work/manuscript/Manuscript.org"))
+   '("o:/2 - ACTIVITES/PLT - FE (LAS0000893)/ILB/1- Project management/1.1- Report Meetings/1.1.2- SP3 DPSSL Pre-Amplifier/Sprints_SP3/Sprints_SP3.org" "o:/2 - ACTIVITES/PLT - FE (LAS0000893)/ILB/2- Production/2.3- SP3 DPSSL Pre Amplifier/2.6 - Technical design/Implantation_mecanique/CDC_implantation_mecanique/CDC_implant.org" "o:/2 - ACTIVITES/PLT - FE (LAS0000893)/ILB/2- Production/2.3- SP3 DPSSL Pre Amplifier/2.6 - Technical design/Design_SPO/CDC_SPO/CDC_SPO.org" "u:/Projets/HCB_software_analysis/HCB_general.org" "u:/Projets/DPSSL_40J_diode/HT135_endommagement/HT135-rupture.org" "u:/Projets/HCB_software_analysis/HCB_soft.org" "u:/Projets/to_do_list_divers.org" "u:/Projets/Cellule_100Hz/SBS_100Hz.org" "u:/Projets/DPSSL_40J_diode/DPSSL.org" "c:/Users/rht/.emacs.d/recurring_tasks.org" "u:/Projets/Measurements_farfield_sbs/farfield_sbs.org" "u:/Projets/Demo_sbs_double_pass/Demo_sbs_double_pass.org"))
  '(package-selected-packages
-   '(languagetool flycheck-languagetool flycheck-grammalecte all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
+   '(gnu-elpa-keyring-update lsp-ui lsp-pyright lsp-mode languagetool flycheck-languagetool flycheck-grammalecte all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
  '(safe-local-variable-values
-   '((languagetool-local-disabled-rules "ALLOW_TO")
+   '((languagetool-local-disabled-rules "UNLIKELY_OPENING_PUNCTUATION" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "CURRENCY" "CURRENCY" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE")
+     (languagetool-local-disabled-rules "NON_STANDARD_WORD" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "CURRENCY" "CURRENCY" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE")
+     (ispell-local-dictionnary . "en_GB")
+     (ispell-local-dictionary . en-GB)
+     (languagetool-local-disabled-rules "CURRENCY" "WHITESPACE_RULE" "EN_UNPAIRED_BRACKETS" "ALONG_TIME" "EN_UNPAIRED_BRACKETS" "EN_UNPAIRED_BRACKETS" "EN_COMPOUNDS_TWO_STEP" "EN_UNPAIRED_BRACKETS")
+     (languagetool-local-disabled-rules "ALLOW_TO")
      (languagetool-local-disabled-rules "EN_UNPAIRED_QUOTES" "UPPERCASE_SENTENCE_START" "COMMA_COMPOUND_SENTENCE_2" "UPPERCASE_SENTENCE_START" "UPPERCASE_SENTENCE_START" "CURRENCY" "EN_UNPAIRED_QUOTES" "UPPERCASE_SENTENCE_START" "EN_UNPAIRED_QUOTES" "EN_UNPAIRED_QUOTES" "EN_UNPAIRED_QUOTES" "EN_WORD_COHERENCY" "NON_STANDARD_WORD" "CURRENCY" "UPPERCASE_SENTENCE_START" "EN_WORD_COHERENCY" "CURRENCY" "CURRENCY" "NON_STANDARD_WORD" "CURRENCY" "WHITESPACE_RULE" "WHITESPACE_RULE" "WHITESPACE_RULE" "CURRENCY" "NON_STANDARD_WORD" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "WHITESPACE_RULE")
      (languagetool-local-disabled-rules "ALLOW_TO" "EN_UNPAIRED_BRACKETS" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE" "CURRENCY")))
  '(warning-suppress-log-types '((comp) (comp) (comp) (auto-save)))
@@ -437,6 +472,8 @@ Returns whatever the action returns."
   :ensure t
   :init
   (elpy-enable)
+  (setq blacken-line-length 79)
+  (define-key python-mode-map (kbd "C-c o") 'elpy-multiedit)
   (define-key python-mode-map (kbd "C-c M-m")
     (defun python-init-script (doc)
       "Insert the script documentation, import typical packages and writes the main fun"
@@ -453,13 +490,17 @@ import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
 
+
 def main():
     \"\"\""doc"\"\"\"
 
-if __name__==\"__main__\":
+
+if __name__ == \"__main__\":
     main()
 "
     )))
+  (define-key yas-minor-mode-map (kbd "C-c k") 'yas-expand)
+  (add-hook 'python-mode-hook 'electric-pair-mode)
   (define-key python-mode-map (kbd "C-c M-p")
     (defun python-insert-current-path ()
       (interactive)
@@ -469,7 +510,7 @@ if __name__==\"__main__\":
     (defun python-insert-figure-save (name)
       "Insert fig.savefig command"
       (interactive "sFigure name: ")
-      (insert "fig.savefig(Path(__file__).parent / \""name".pdf\", dpi=400, bbox_inches=\"tight\")"))))
+      (insert "fig.savefig(Path(__file__).parent / \""name".png\", dpi=400, bbox_inches=\"tight\")"))))
 
 (add-to-list 'auto-mode-alist '("\\.pyx\\'" . python-mode))
 
@@ -482,6 +523,114 @@ if __name__==\"__main__\":
       (list (lambda ()
               (setq python-shell-interpreter "python")
 	      )))
+;; LSP mode
+
+(use-package lsp-mode
+  :ensure t
+  :hook ((python-mode . lsp))
+  :custom
+  (lsp-pyright-typechecking-mode "off")
+  :config
+  (setq lsp-disabled-clients '(pyls)))  ;; pour éviter conflit si pyls est actif
+
+(with-eval-after-load 'lsp-mode
+  (require 'lsp-pyright)
+  (add-to-list 'lsp-disabled-clients 'pyls)  ;; si tu avais Elpy/pyls avant
+  (add-to-list 'lsp-enabled-clients 'pyright)
+  (setq lsp-pylsp-plugins-flake8-ignore ["E501"])
+  (setq lsp-typescript-disable-automatic-type-acquisition t))
+
+
+(setq lsp-pyright-extra-paths []
+      lsp-pyright-typechecking-mode "basic"
+      lsp-pyright-auto-import-completions t
+      lsp-pyright-use-library-code-for-types t
+      ;; Désactive certaines règles gênantes
+      lsp-pyright-plugins nil
+      lsp-pyright-analysis-errors
+      '(:reportGeneralTypeIssues nil
+        ;; ajoute ici les erreurs que tu veux désactiver
+        ))
+
+(setq flycheck-highlighting-mode 'lines) ; moins agressif que underline
+
+;; (defun my/python-flymake-pycodestyle (report-fn &rest _args)
+;;   "Custom Flymake backend using pycodestyle with E501 disabled."
+;;   (unless (executable-find "pycodestyle")
+;;     (error "Cannot find pycodestyle executable"))
+;;   (let* ((source (current-buffer))
+;;          (temp-file (make-temp-file "flymake-pycodestyle"))
+;;          (proc (make-process
+;;                 :name "flymake-pycodestyle"
+;;                 :buffer (generate-new-buffer "*flymake-pycodestyle*")
+;;                 :command (list "pycodestyle" "--ignore=E501" temp-file)
+;;                 :noquery t
+;;                 :sentinel
+;;                 (lambda (p _e)
+;;                   (when (eq 'exit (process-status p))
+;;                     (unwind-protect
+;;                         (when (buffer-live-p (process-buffer p))
+;;                           (with-current-buffer (process-buffer p)
+;;                             (goto-char (point-min))
+;;                             (let (diags)
+;;                               (while (re-search-forward "^\\([^:]+\\):\\([0-9]+\\):\\([0-9]+\\): \\(.*\\)$" nil t)
+;;                                 (let* ((lnum (string-to-number (match-string 2)))
+;;                                        (col (string-to-number (match-string 3)))
+;;                                        (text (match-string 4))
+;;                                        (beg (flymake-diag-region source lnum col))
+;;                                        (end (cdr beg))
+;;                                        (beg (car beg)))
+;;                                   (push (flymake-make-diagnostic source beg end :warning text) diags)))
+;;                               (funcall report-fn diags)))))
+;;                     (delete-file temp-file)
+;;                     (kill-buffer (process-buffer p)))))))
+;;     (with-temp-file temp-file
+;;       (insert-buffer-substring source))))
+
+;; (defun my/setup-flymake-python ()
+;;   "Configure Flymake to use custom pycodestyle backend."
+;;   (setq-local flymake-diagnostic-functions nil)
+;;   (add-hook 'flymake-diagnostic-functions #'my/python-flymake-pycodestyle nil t)
+;;   (flymake-mode 1))
+
+;; (add-hook 'python-mode-hook #'my/setup-flymake-python)
+
+
+;; (defun my/lsp-diagnostic-filter-debug (diag _source)
+;;   (condition-case err
+;;       (cond
+;;        ((eq diag t)
+;;         (message "[lsp-filter] diag is t (boolean true)")
+;;         t)
+;;        ((or (listp diag) (vectorp diag))
+;;         (message "[lsp-filter] diag is list/vector: %s" (type-of diag))
+;;         (cl-every (lambda (d) (my/lsp-diagnostic-filter-debug d _source)) diag))
+;;        ((hash-table-p diag)
+;;         (let ((msg (gethash "message" diag)))
+;;           (message "[lsp-filter] diag message: %s" msg)
+;;           (not (and (stringp msg)
+;;                     (or (string-match-p "Could not specialize type" msg)
+;;                         (string-match-p "Partially unknown type" msg))))))
+;;        ((and (listp diag) (plist-get diag :message))
+;;         (let ((msg (plist-get diag :message)))
+;;           (message "[lsp-filter] diag plist message: %s" msg)
+;;           (not (and (stringp msg)
+;;                     (or (string-match-p "Could not specialize type" msg)
+;;                         (string-match-p "Partially unknown type" msg))))))
+;;        (t
+;;         (message "[lsp-filter] diag unknown type: %s val: %s" (type-of diag) diag)
+;;         t))
+;;     (error
+;;      (message "[lsp-filter] error filtering diag: %s" err)
+;;      t)))
+
+;; (setq lsp-diagnostic-filter #'my/lsp-diagnostic-filter-debug)
+
+
+;; Optionnel mais utile : UI améliorée
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode)
 
 ;; (use-package py-autopep8
 ;;   :config
@@ -494,9 +643,9 @@ if __name__==\"__main__\":
 
 (add-hook 'after-init-hook #'global-flycheck-mode)
 (setq-default flycheck-emacs-lisp-load-path 'inherit)
-(setq flycheck-flake8-maximum-line-length 99)
+(setq flycheck-flake8-maximum-line-length 79)
 (setq flycheck-python-pylint-executable "~/Anaconda3/Scripts/pylint")
-(setq elpy-rpc-python-command "~/Anaconda3/envs/elpy/pythonw.exe")
+(setq elpy-rpc-python-command "~/Anaconda3/envs/data/pythonw.exe")
 
 ;; Projectile
 (use-package projectile
@@ -600,7 +749,6 @@ if __name__==\"__main__\":
 (add-hook 'makefile-mode-hook #'add-add-dependency)
 (add-hook 'after-init-hook #'projectile-global-mode)  
 ;;Custom set varible to switch to another .el file ASAP
-
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

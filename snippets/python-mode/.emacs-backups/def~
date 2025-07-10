@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: def
+# key: def
+# --
+
+def ${1:fun_name}(`(let* ((n (string-to-number (read-string "Arg number ? ")))
+        (res ""))
+   (dotimes (i n)
+     (setq res (concat res (format "${%d:Arg_i}: ${%d:Type_Arg_i}, " (2*i, 2*i+1)))))
+   res)`

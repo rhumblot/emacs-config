@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: asserteq
+# key: asserteq
+# --
+assert ${1:var1} == pytest.approx(${2:var2})
+$0

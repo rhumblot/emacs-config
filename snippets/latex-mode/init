@@ -1,0 +1,66 @@
+# -*- mode: snippet -*-
+# name: <init
+# key: <init
+# expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region 'nil))
+# --
+
+\documentclass[12pt]{article}
+\usepackage{Template/Preamble}
+\renewcommand{\footrulewidth}{1.5pt} \setlength{\footskip}{28pt}
+\lfoot{\footnotesize \textsc{-${1:footnote}-}}
+\rfoot{\footnotesize page~\thepage\~sur~\pageref{LastPage}} \cfoot{}
+
+\begin{document}
+
+
+\begin{titlepage}
+\begin{center}
+\vspace{2cm}
+\centering \includegraphics[width=0.35\textwidth]{Template/Figures/Amplitude_RVB.png}
+\vspace{2cm}
+
+
+
+% Title
+\rule{\linewidth}{0.5mm} \\\\[0.4cm]
+{ \huge \bfseries ${2:main_title} \\\\[0.4cm]}
+\rule{\linewidth}{0.5mm} \\\\[1cm]
+
+\vspace{1cm}
+
+% Author
+\noindent
+
+\begin{flushleft} \large
+\emph{Author :} M. Raphaël \textsc{Humblot}\\\\
+\vspace{0.5cm}
+\emph{Date :} \today\\\\
+\vspace{0.5cm}
+\emph{Revision :} En cours de modification
+\end{flushleft}
+
+\vfill
+
+% Bottom of the page
+
+
+\end{center}
+\end{titlepage}
+
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+\label{sec:introduction}
+
+$0
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% ispell-local-dictionary: "${3:en_GB}"
+%%% TeX-master: t
+%%% End:
