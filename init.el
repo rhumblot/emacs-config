@@ -1,18 +1,17 @@
-;; Initialize package sources
+;;; init.el ---- Emacs configuration
 
-;;; Code:
+;;; Package sources
+
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "http://elpa.gnu.org/packages/")))
 
 (package-initialize)
+(setq package-check-signature t) ;; To desactivate if installation from melpa
 
-(setq package-check-signature t)
-;; (unless package-archive-contents
-;;   (package-refresh-contents))
+;; Initialize use-package
 
-;; Initialize use-package on non-Linux platforms
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 (require 'use-package)
@@ -22,18 +21,26 @@
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
 
-(setq desktop-save 'ask)
-(setq confirm-kill-emacs #'y-or-n-p)
-
 (setq explicit-shell-file-name "c:/Program Files/Git/git-bash")
 (setq shell-file-name "bash")
 (setq shell-command-switch "-c")
 (setenv "BASH_ENV" "~/.bashrc")
 
-;; auto-saves in .emacs-backups folder
+;;; Emacs Session management
+(setq desktop-save 'ask)
+(setq confirm-kill-emacs #'y-or-n-p)
+
+;; Auto-saves and backups
 (let ((dir ".emacs-backups"))
   (setq auto-save-file-name-transforms `(("\\([^/]*/\\)*\\([^/]*\\)\\'" ,(concat dir "/\\2")))
         backup-directory-alist `((".*" . ,dir))))
+
+;; Encodage en UTF-8
+(setq inhibit-compacting-font-caches t)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-language-environment "UTF-8")
+(prefer-coding-system 'utf-8)
 
 ;; Appearance customization
 (setq inhibit-startup-message t)
@@ -47,36 +54,148 @@
 (add-to-list 'default-frame-alist '(fullscreen . fullheight))
 (column-number-mode)
 (global-display-line-numbers-mode t)
+(setq visible-bell t)
 
+;;; Themes and modeline
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1))
+(use-package all-the-icons)
+(unless (package-installed-p 'doom-themes)
+  (all-the-icons-install-fonts))
+(use-package doom-themes
+  :init (load-theme 'doom-one t))
+
+;; Disable line numbers for some modes
+(dolist (mode '(org-mode-hook
+		pdf-view-mode-hook
+                term-mode-hook
+                shell-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+(add-hook 'image-mode-hook (lambda () (display-line-numbers-mode -1)))
+
+;;; Dashboard
 (use-package dashboard
   :ensure t
   :config
   (dashboard-setup-startup-hook)
-  (if (file-directory-p "u:/Travaux")
-      (setq dashboard-week-agenda t)
-    (setq dashboard-week-agenda nil))
   (setq dashboard-icon-type 'all-the-icons) ;;
   (setq dashboard-set-file-icons t)
   (setq dashboard-set-file-icons t)
   (setq dashboard-set-navigator t)
-)
-;;Set the title
-(setq dashboard-banner-logo-title "Time to work")
-(setq dashboard-startup-banner "~/.emacs.d/logo/logo_amplitude_2.png")
+  (setq dashboard-banner-logo-title "Time to work")
+  (setq dashboard-startup-banner "~/.emacs.d/logo/logo_amplitude_2.png")
+  (setq dashboard-set-init-info t)
+  (setq dashboard-footer-messages
+	'("En mode loque"
+	  "Maitrise de la suite office (⌐□_□)"
+	  "While any text editor can save your files, only Emacs can save your soul"
+	  "You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
+	  "Les barreaux lasers c'est comme les cyclistes, plus c'est dopé, plus il y a de gain."
+	  "When I see a bird that walks like a duck and swims like a duck and quacks like a duck, I call that bird a duck"
+	  "Gaussian beam waist = lambda f / pi d"
+	  "Top-hat beam waist = 1.22 lambda f / d"
+	  ))
+  )
 
-;;Set the banner
-(setq dashboard-set-init-info t)
 
-(setq dashboard-footer-messages
-      '("En mode loque"
-	"Maitrise de la suite office (⌐□_□)"
-	"While any text editor can save your files, only Emacs can save your soul"
-	"You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
-	"Les barreaux lasers c'est comme les cyclistes, plus c'est dopé, plus il y a de gain."
-	"When I see a bird that walks like a duck and swims like a duck and quacks like a duck, I call that bird a duck"
-	"Gaussian beam waist = lambda f / pi d"
-	"Top-hat beam waist = 1.22 lambda f / d"
-	))
+;; Ivy and Counsel
+
+(use-package ivy
+  :diminish
+  :bind (("C-s" . swiper)
+         :map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done)	
+         ("C-l" . ivy-alt-done))
+  :config
+  (ivy-mode 1))
+
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+         ("C-x b" . counsel-ibuffer)
+         ("C-x C-f" . counsel-find-file)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history)))
+
+(use-package ivy-rich
+  :init
+  (ivy-rich-mode 1))
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :init (all-the-icons-ivy-rich-mode 1))
+
+(use-package ivy-prescient
+  :after counsel
+  :config
+  (ivy-prescient-mode 1)
+  (prescient-persist-mode 1))
+
+;; Company 
+(use-package company
+  :config
+  (global-company-mode 1))
+
+(use-package company-prescient
+  :after company
+  :config
+  (company-prescient-mode 1))
+
+;; Which key
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 1))
+
+;; helpful
+(use-package helpful
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
+
+;; Flycheck
+
+(use-package flycheck
+  :hook python-mode
+  :config
+  (flycheck-define-checker grammalecte
+    "A French grammar checker using Grammalecte."
+    :command ("C:/Users/rht/Anaconda3/envs/data/python.exe"
+              "c:/Users/rht/.emacs.d/Grammalecte/grammalecte_flycheck.py" source)
+    :standard-input t
+    :error-patterns
+    (
+     ;; warning avec plage de colonnes
+     (warning line-start "<stdin>:" line ":" column "-" end-column ": warning: " (message) line-end)
+     (error   line-start "<stdin>:" line ":" column "-" end-column ": error: " (message) line-end)
+     )
+    :modes (text-mode markdown-mode latex-mode org-mode))
+  (add-to-list 'flycheck-checkers 'grammalecte)
+  (flycheck-add-next-checker 'grammalecte 'tex-chktex)
+  (add-hook 'text-mode-hook #'flycheck-mode)
+  (add-hook 'latex-mode-hook #'flycheck-mode)
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+  (setq-default flycheck-emacs-lisp-load-path 'inherit)
+  (setq flycheck-flake8-maximum-line-length 79)
+  )
+
+
+
+
+
+
+
+
+
+
+
 
 ;; Save recentf at regular intervals
 (run-at-time (current-time) 300 'recentf-save-list)
@@ -90,76 +209,12 @@
 (use-package focus
   :commands focus-mode)
 
-;; Disable line numbers for some modes
-(dolist (mode '(org-mode-hook
-		pdf-view-mode-hook
-                term-mode-hook
-                shell-mode-hook
-                eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-(add-hook 'image-mode-hook (lambda () (display-line-numbers-mode -1)))
-
-;; Encodage en UTF-8
-(setq inhibit-compacting-font-caches t)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-language-environment "UTF-8")
-(prefer-coding-system 'utf-8)
-
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1))
-
-(use-package all-the-icons)
-(unless (package-installed-p 'doom-themes)
-  (all-the-icons-install-fonts))
-
-(use-package doom-themes
-  :init (load-theme 'doom-one t))
-
-;; Set up the visible bell
-(setq visible-bell t)
-
 ;;Add escape as an escape key
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 ;; Add shortcut for accentuated é
 (global-set-key (kbd "M-é") 'insert-caps-accentuated-e)
 (global-set-key (kbd "C-& C-d") 'dashboard-open)
 ;; Autocompletion and finding files
-(use-package ivy
-  :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)	
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
-  :config
-  (ivy-mode 1))
-(ivy-mode 1)
-
-(use-package counsel
-  :bind (("M-x" . counsel-M-x)
-         ("C-x b" . counsel-ibuffer)
-         ("C-x C-f" . counsel-find-file)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history)))
-
-(use-package all-the-icons-ivy-rich
-  :ensure t
-  :init (all-the-icons-ivy-rich-mode 1))
-
-(use-package ivy-rich
-  :init
-  (ivy-rich-mode 1))
 
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode)
@@ -171,68 +226,11 @@
 ;; It respects `all-the-icons-color-icons'.
 (setq all-the-icons-ivy-rich-color-icon t)
 
-(use-package ivy-prescient
-  :after counsel
-  :config
-  (ivy-prescient-mode 1)
-  (prescient-persist-mode 1))
 
-(use-package company
-  :config
-  (global-company-mode 1))
-
-(use-package company-prescient
-  :after company
-  :config
-  (company-prescient-mode 1))
-
-(use-package which-key
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 1))
-
-
-(use-package helpful
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
-  :bind
-  ([remap describe-function] . counsel-describe-function)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
-
-(use-package flycheck
-  :hook python-mode)
-
-(require 'flycheck)
-(flycheck-define-checker grammalecte
-  "A French grammar checker using Grammalecte."
-  :command ("C:/Users/rht/Anaconda3/envs/data/python.exe"
-            "c:/Users/rht/.emacs.d/Grammalecte/grammalecte_flycheck.py" source)
-  :standard-input t
-  :error-patterns
-    (
-   ;; warning avec plage de colonnes
-   (warning line-start "<stdin>:" line ":" column "-" end-column ": warning: " (message) line-end)
-   (error   line-start "<stdin>:" line ":" column "-" end-column ": error: " (message) line-end)
-  )
-  :modes (text-mode markdown-mode latex-mode org-mode))
-
-(add-to-list 'flycheck-checkers 'grammalecte)
-
-(flycheck-add-next-checker 'grammalecte 'tex-chktex)
-
-(add-hook 'text-mode-hook #'flycheck-mode)
-(add-hook 'latex-mode-hook #'flycheck-mode)
-
-(add-hook 'after-init-hook #'global-flycheck-mode)
-(setq-default flycheck-emacs-lisp-load-path 'inherit)
-(setq flycheck-flake8-maximum-line-length 79)
 
 ;;Magit
 (use-package magit
+  :defer t
   :commands (magit)
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
@@ -272,7 +270,7 @@
     (defun Latex-insert-unit (value unit)
       "Prompts for value and unit and insert the latex command that corresponds to this value"
       (interactive "sValue: \nsUnit: \n")
-      (insert "$\\unit{" value "}{" unit "}$ ")))
+      (insert "\\SI{" value "}{" unit "} ")))
 
   (defvar prefix-alist '((?1 "Latin letter" (lambda () (insert "\\nomenclature[a]") 'latin))
 			 (?2 "Greek letter" (lambda () (insert "\\nomenclature[g]") 'greek))
@@ -394,6 +392,11 @@ Returns whatever the action returns."
 	'((sequence "TODO(t)" "|" "DONE(d)")
 	  (sequence "PLAN(p)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
   (setq org-log-done t)
+  (setq org-tag-alist '(("@Me" . ?r) ("@BEE" . ?e) ("@BEM" . ?m) ("@Indus" . ?i) ("@RGP" . ?g)))
+  (setq org-agenda-tags-column -100)
+  (setq temp-buffer-resize-mode t)
+  (setq temp-buffer-max-height 30)
+  (setq org-agenda-align-tags t)
   (setq org-archive-location ".emacs-backups/archives.org::")
   (dolist (files org-agenda-files)
     (add-to-list 'recentf-exclude files)
@@ -427,45 +430,6 @@ Returns whatever the action returns."
 (use-package visual-fill-column
   :hook (org-mode . efs/org-mode-visual-fill))
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(LaTeX-electric-left-right-brace t)
- '(LaTeX-math-abbrev-prefix "&")
- '(LaTeX-math-list
-   '(("M-p" "partial" "" 2202)
-     ("M-r" "overrightarrow" "" nil)
-     ("M-:" "frac" "" nil)
-     ("M-c" "text{c.c.}" "" nil)
-     ("M-." "dot" "" 15)
-     ("SPC" "&" "" nil)))
- '(TeX-electric-math '("$" . "$"))
- '(TeX-electric-sub-and-superscript t)
- '(calendar-date-style 'european)
- '(conda-anaconda-home "~/Anaconda3")
- '(custom-safe-themes
-   '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
- '(diary-show-holidays-flag nil)
- '(ignored-local-variable-values
-   '((languagetool-local-disabled-rules "CURRENCY" "WHITESPACE_RULE" "EN_UNPAIRED_BRACKETS" "ALONG_TIME" "EN_UNPAIRED_BRACKETS" "EN_UNPAIRED_BRACKETS" "EN_COMPOUNDS_TWO_STEP" "EN_UNPAIRED_BRACKETS")))
- '(ispell-local-dictionary "fr")
- '(org-agenda-files
-   '("o:/2 - ACTIVITES/PLT - FE (LAS0000893)/ILB/1- Project management/1.1- Report Meetings/1.1.2- SP3 DPSSL Pre-Amplifier/Sprints_SP3/Sprints_SP3.org" "o:/2 - ACTIVITES/PLT - FE (LAS0000893)/ILB/2- Production/2.3- SP3 DPSSL Pre Amplifier/2.6 - Technical design/Implantation_mecanique/CDC_implantation_mecanique/CDC_implant.org" "o:/2 - ACTIVITES/PLT - FE (LAS0000893)/ILB/2- Production/2.3- SP3 DPSSL Pre Amplifier/2.6 - Technical design/Design_SPO/CDC_SPO/CDC_SPO.org" "u:/Projets/HCB_software_analysis/HCB_general.org" "u:/Projets/DPSSL_40J_diode/HT135_endommagement/HT135-rupture.org" "u:/Projets/HCB_software_analysis/HCB_soft.org" "u:/Projets/to_do_list_divers.org" "u:/Projets/Cellule_100Hz/SBS_100Hz.org" "u:/Projets/DPSSL_40J_diode/DPSSL.org" "c:/Users/rht/.emacs.d/recurring_tasks.org" "u:/Projets/Measurements_farfield_sbs/farfield_sbs.org" "u:/Projets/Demo_sbs_double_pass/Demo_sbs_double_pass.org"))
- '(package-selected-packages
-   '(gnu-elpa-keyring-update lsp-ui lsp-pyright lsp-mode languagetool flycheck-languagetool flycheck-grammalecte all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
- '(safe-local-variable-values
-   '((languagetool-local-disabled-rules "UNLIKELY_OPENING_PUNCTUATION" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "CURRENCY" "CURRENCY" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE")
-     (languagetool-local-disabled-rules "NON_STANDARD_WORD" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "CURRENCY" "CURRENCY" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE")
-     (ispell-local-dictionnary . "en_GB")
-     (ispell-local-dictionary . en-GB)
-     (languagetool-local-disabled-rules "CURRENCY" "WHITESPACE_RULE" "EN_UNPAIRED_BRACKETS" "ALONG_TIME" "EN_UNPAIRED_BRACKETS" "EN_UNPAIRED_BRACKETS" "EN_COMPOUNDS_TWO_STEP" "EN_UNPAIRED_BRACKETS")
-     (languagetool-local-disabled-rules "ALLOW_TO")
-     (languagetool-local-disabled-rules "EN_UNPAIRED_QUOTES" "UPPERCASE_SENTENCE_START" "COMMA_COMPOUND_SENTENCE_2" "UPPERCASE_SENTENCE_START" "UPPERCASE_SENTENCE_START" "CURRENCY" "EN_UNPAIRED_QUOTES" "UPPERCASE_SENTENCE_START" "EN_UNPAIRED_QUOTES" "EN_UNPAIRED_QUOTES" "EN_UNPAIRED_QUOTES" "EN_WORD_COHERENCY" "NON_STANDARD_WORD" "CURRENCY" "UPPERCASE_SENTENCE_START" "EN_WORD_COHERENCY" "CURRENCY" "CURRENCY" "NON_STANDARD_WORD" "CURRENCY" "WHITESPACE_RULE" "WHITESPACE_RULE" "WHITESPACE_RULE" "CURRENCY" "NON_STANDARD_WORD" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "WHITESPACE_RULE")
-     (languagetool-local-disabled-rules "ALLOW_TO" "EN_UNPAIRED_BRACKETS" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE" "CURRENCY")))
- '(warning-suppress-log-types '((comp) (comp) (comp) (auto-save)))
- '(warning-suppress-types '((comp) (comp) (auto-save))))
 
 (use-package elpy
   :hook (python-mode)
@@ -526,7 +490,7 @@ if __name__ == \"__main__\":
 ;; LSP mode
 
 (use-package lsp-mode
-  :ensure t
+  :defer t
   :hook ((python-mode . lsp))
   :custom
   (lsp-pyright-typechecking-mode "off")
@@ -553,79 +517,6 @@ if __name__ == \"__main__\":
         ))
 
 (setq flycheck-highlighting-mode 'lines) ; moins agressif que underline
-
-;; (defun my/python-flymake-pycodestyle (report-fn &rest _args)
-;;   "Custom Flymake backend using pycodestyle with E501 disabled."
-;;   (unless (executable-find "pycodestyle")
-;;     (error "Cannot find pycodestyle executable"))
-;;   (let* ((source (current-buffer))
-;;          (temp-file (make-temp-file "flymake-pycodestyle"))
-;;          (proc (make-process
-;;                 :name "flymake-pycodestyle"
-;;                 :buffer (generate-new-buffer "*flymake-pycodestyle*")
-;;                 :command (list "pycodestyle" "--ignore=E501" temp-file)
-;;                 :noquery t
-;;                 :sentinel
-;;                 (lambda (p _e)
-;;                   (when (eq 'exit (process-status p))
-;;                     (unwind-protect
-;;                         (when (buffer-live-p (process-buffer p))
-;;                           (with-current-buffer (process-buffer p)
-;;                             (goto-char (point-min))
-;;                             (let (diags)
-;;                               (while (re-search-forward "^\\([^:]+\\):\\([0-9]+\\):\\([0-9]+\\): \\(.*\\)$" nil t)
-;;                                 (let* ((lnum (string-to-number (match-string 2)))
-;;                                        (col (string-to-number (match-string 3)))
-;;                                        (text (match-string 4))
-;;                                        (beg (flymake-diag-region source lnum col))
-;;                                        (end (cdr beg))
-;;                                        (beg (car beg)))
-;;                                   (push (flymake-make-diagnostic source beg end :warning text) diags)))
-;;                               (funcall report-fn diags)))))
-;;                     (delete-file temp-file)
-;;                     (kill-buffer (process-buffer p)))))))
-;;     (with-temp-file temp-file
-;;       (insert-buffer-substring source))))
-
-;; (defun my/setup-flymake-python ()
-;;   "Configure Flymake to use custom pycodestyle backend."
-;;   (setq-local flymake-diagnostic-functions nil)
-;;   (add-hook 'flymake-diagnostic-functions #'my/python-flymake-pycodestyle nil t)
-;;   (flymake-mode 1))
-
-;; (add-hook 'python-mode-hook #'my/setup-flymake-python)
-
-
-;; (defun my/lsp-diagnostic-filter-debug (diag _source)
-;;   (condition-case err
-;;       (cond
-;;        ((eq diag t)
-;;         (message "[lsp-filter] diag is t (boolean true)")
-;;         t)
-;;        ((or (listp diag) (vectorp diag))
-;;         (message "[lsp-filter] diag is list/vector: %s" (type-of diag))
-;;         (cl-every (lambda (d) (my/lsp-diagnostic-filter-debug d _source)) diag))
-;;        ((hash-table-p diag)
-;;         (let ((msg (gethash "message" diag)))
-;;           (message "[lsp-filter] diag message: %s" msg)
-;;           (not (and (stringp msg)
-;;                     (or (string-match-p "Could not specialize type" msg)
-;;                         (string-match-p "Partially unknown type" msg))))))
-;;        ((and (listp diag) (plist-get diag :message))
-;;         (let ((msg (plist-get diag :message)))
-;;           (message "[lsp-filter] diag plist message: %s" msg)
-;;           (not (and (stringp msg)
-;;                     (or (string-match-p "Could not specialize type" msg)
-;;                         (string-match-p "Partially unknown type" msg))))))
-;;        (t
-;;         (message "[lsp-filter] diag unknown type: %s val: %s" (type-of diag) diag)
-;;         t))
-;;     (error
-;;      (message "[lsp-filter] error filtering diag: %s" err)
-;;      t)))
-
-;; (setq lsp-diagnostic-filter #'my/lsp-diagnostic-filter-debug)
-
 
 ;; Optionnel mais utile : UI améliorée
 (use-package lsp-ui
@@ -756,6 +647,45 @@ if __name__ == \"__main__\":
  ;; If there is more than one, they won't work right.
  )
 
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(LaTeX-electric-left-right-brace t)
+ '(LaTeX-math-abbrev-prefix "&")
+ '(LaTeX-math-list
+   '(("M-p" "partial" "" 2202)
+     ("M-r" "overrightarrow" "" nil)
+     ("M-:" "frac" "" nil)
+     ("M-c" "text{c.c.}" "" nil)
+     ("M-." "dot" "" 15)
+     ("SPC" "&" "" nil)))
+ '(TeX-electric-math '("$" . "$"))
+ '(TeX-electric-sub-and-superscript t)
+ '(calendar-date-style 'european)
+ '(conda-anaconda-home "~/Anaconda3")
+ '(custom-safe-themes
+   '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
+ '(diary-show-holidays-flag nil)
+ '(ignored-local-variable-values
+   '((languagetool-local-disabled-rules "CURRENCY" "WHITESPACE_RULE" "EN_UNPAIRED_BRACKETS" "ALONG_TIME" "EN_UNPAIRED_BRACKETS" "EN_UNPAIRED_BRACKETS" "EN_COMPOUNDS_TWO_STEP" "EN_UNPAIRED_BRACKETS")))
+ '(ispell-local-dictionary "fr")
+ '(org-agenda-files
+   '("u:/Projets/Support_HCB/HCB_general.org" "u:/Projets/Avance_de_phase_LDRS/LDRS.org" "u:/Projets/Support_interpid_flash/interpid-flash.org" "u:/Projets/to_do_list_divers.org" "u:/Autres/Formation/formation.org" "o:/2 - ACTIVITES/PLT - FE (LAS0000893)/ILB/1- Project management/1.1- Report Meetings/1.1.2- SP3 DPSSL Pre-Amplifier/Sprints_SP3/Sprints_SP3.org" "o:/2 - ACTIVITES/PLT - FE (LAS0000893)/ILB/2- Production/2.3- SP3 DPSSL Pre Amplifier/2.6 - Technical design/Design_SPO/CDC_SPO/CDC_SPO.org" "u:/Projets/DPSSL_40J_diode/DPSSL.org" "c:/Users/rht/.emacs.d/recurring_tasks.org" "u:/Projets/Measurements_farfield_sbs/farfield_sbs.org" "u:/Projets/Demo_sbs_double_pass/Demo_sbs_double_pass.org"))
+ '(package-selected-packages
+   '(gnu-elpa-keyring-update lsp-ui lsp-pyright lsp-mode languagetool flycheck-languagetool flycheck-grammalecte all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
+ '(safe-local-variable-values
+   '((languagetool-local-disabled-rules "UNLIKELY_OPENING_PUNCTUATION" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "CURRENCY" "CURRENCY" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE")
+     (languagetool-local-disabled-rules "NON_STANDARD_WORD" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "CURRENCY" "CURRENCY" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE")
+     (ispell-local-dictionnary . "en_GB")
+     (ispell-local-dictionary . en-GB)
+     (languagetool-local-disabled-rules "CURRENCY" "WHITESPACE_RULE" "EN_UNPAIRED_BRACKETS" "ALONG_TIME" "EN_UNPAIRED_BRACKETS" "EN_UNPAIRED_BRACKETS" "EN_COMPOUNDS_TWO_STEP" "EN_UNPAIRED_BRACKETS")
+     (languagetool-local-disabled-rules "ALLOW_TO")
+     (languagetool-local-disabled-rules "EN_UNPAIRED_QUOTES" "UPPERCASE_SENTENCE_START" "COMMA_COMPOUND_SENTENCE_2" "UPPERCASE_SENTENCE_START" "UPPERCASE_SENTENCE_START" "CURRENCY" "EN_UNPAIRED_QUOTES" "UPPERCASE_SENTENCE_START" "EN_UNPAIRED_QUOTES" "EN_UNPAIRED_QUOTES" "EN_UNPAIRED_QUOTES" "EN_WORD_COHERENCY" "NON_STANDARD_WORD" "CURRENCY" "UPPERCASE_SENTENCE_START" "EN_WORD_COHERENCY" "CURRENCY" "CURRENCY" "NON_STANDARD_WORD" "CURRENCY" "WHITESPACE_RULE" "WHITESPACE_RULE" "WHITESPACE_RULE" "CURRENCY" "NON_STANDARD_WORD" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "WHITESPACE_RULE")
+     (languagetool-local-disabled-rules "ALLOW_TO" "EN_UNPAIRED_BRACKETS" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE" "CURRENCY")))
+ '(warning-suppress-log-types '((comp) (comp) (comp) (auto-save)))
+ '(warning-suppress-types '((comp) (comp) (auto-save))))
 
 
 ;;; init.el ends here

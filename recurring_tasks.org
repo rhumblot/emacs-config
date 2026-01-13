@@ -1,0 +1,39 @@
+* Tasks
+** TODO Faire imputation heure
+SCHEDULED: <2026-01-15 jeu. +1m>
+:PROPERTIES:
+:LAST_REPEAT: [2025-12-15 lun. 09:41]
+:END:
+- State "DONE"       from "TODO"       [2025-12-15 lun. 09:41]
+- State "DONE"       from "TODO"       [2025-11-17 lun. 10:08]
+- State "DONE"       from "TODO"       [2025-10-20 lun. 09:42]
+- State "DONE"       from "TODO"       [2025-09-15 lun. 10:47]
+- State "DONE"       from "TODO"       [2025-08-18 lun. 09:43]
+- State "DONE"       from "TODO"       [2025-07-15 mar. 12:05]
+- State "DONE"       from "TODO"       [2025-06-16 lun. 09:08]
+- State "DONE"       from "TODO"       [2025-05-15 jeu. 17:19]
+- State "DONE"       from "TODO"       [2025-04-14 lun. 09:25]
+** TODO Faire imputation heures
+SCHEDULED: <2026-01-25 dim. +1m>
+:PROPERTIES:
+:LAST_REPEAT: [2026-01-05 lun. 10:14]
+:END:
+- State "DONE"       from "TODO"       [2026-01-05 lun. 10:14]
+- State "DONE"       from "TODO"       [2025-11-27 jeu. 11:36]
+- State "DONE"       from "TODO"       [2025-11-27 jeu. 11:36]
+- State "DONE"       from "TODO"       [2025-11-27 jeu. 11:35]
+** TODO Remplir fiche covoiturage
+SCHEDULED: <2026-02-01 dim. +1m>
+:PROPERTIES:
+:LAST_REPEAT: [2026-01-06 mar. 09:22]
+:END:
+- State "DONE"       from "TODO"       [2026-01-06 mar. 09:22]
+- State "DONE"       from "TODO"       [2025-12-01 lun. 09:13]
+- State "DONE"       from "TODO"       [2025-11-03 lun. 09:12]
+- State "DONE"       from "TODO"       [2025-10-01 mer. 08:55]
+- State "DONE"       from "TODO"       [2025-09-01 lun. 08:57]
+- State "DONE"       from "TODO"       [2025-08-01 ven. 09:29]
+- State "DONE"       from "TODO"       [2025-07-01 mar. 12:17]
+- State "DONE"       from "TODO"       [2025-06-02 lun. 08:53]
+- State "DONE"       from "TODO"       [2025-05-05 lun. 09:13]
+- State "DONE"       from "TODO"       [2025-04-01 mar. 10:46]
