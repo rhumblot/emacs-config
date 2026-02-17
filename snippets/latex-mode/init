@@ -8,7 +8,7 @@
 \usepackage{Template/Preamble}
 \renewcommand{\footrulewidth}{1.5pt} \setlength{\footskip}{28pt}
 \lfoot{\footnotesize \textsc{-${1:footnote}-}}
-\rfoot{\footnotesize page~\thepage\~sur~\pageref{LastPage}} \cfoot{}
+\rfoot{\footnotesize page~\thepage~sur~\pageref{LastPage}} \cfoot{}
 
 \begin{document}
 
