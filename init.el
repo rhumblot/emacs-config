@@ -539,8 +539,6 @@ if __name__ == \"__main__\":
 ;; Python mode
 (use-package python-mode
   :ensure t)
-
-;; Optionnel : LSP UI pour diagnostics et hover
 (use-package lsp-ui
   :ensure t
   :commands lsp-ui-mode)
@@ -558,16 +556,6 @@ if __name__ == \"__main__\":
 
 ;; (setq flycheck-highlighting-mode 'lines) moins agressif que underline
 
-;; Optionnel mais utile : UI améliorée
-;; (use-package lsp-ui
-;;   :ensure t
-;;   :commands lsp-ui-mode)
-
-;; (use-package py-autopep8
-;;   :config
-;;   (setq py-autopep8-options '("--max-line-length=79" "--aggressive"))
-;;   :hook ((python-mode) . py-autopep8-mode)
-;;   )
 
 (use-package flycheck
   :hook python-mode)
