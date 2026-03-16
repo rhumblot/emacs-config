@@ -1,123 +1,138 @@
-;;; init.el ---- Emacs configuration
-
-;;; Package sources
+(setq my/python-data-path (expand-file-name "~/Anaconda3/envs/data/python.exe"))
+(setq my/grammalecte-script-path (expand-file-name "~/.emacs.d/grammalecte/grammalecte_flycheck.py"))
+(setq my/shell-file-name "c:/Program Files/Git/git-bash")
+(setq my/bash-profile-path (expand-file-name "~/.bashrc"))
+(setq my/startup-banner (expand-file-name "~/.emacs.d/logo/logo_amplitude_2.png"))
+(setq my/recentf-path (expand-file-name "~/.emacs.d/recentf"))
+(setq my/bookmarks-path (expand-file-name "~/.emacs.d/bookmarks"))
+(setq my/magit-git-executable "C:\\Program Files\\Git\\mingw64\\bin\\git.exe")
+(setq my/latex-template-path "u:/Autres/Template/Document_latex/")
+(setq my/hunspell-path "C:/msys64/mingw64/bin/hunspell.exe")
+(setq custom-file (concat user-emacs-directory "custom.el"))
+(load custom-file 'noerror)
 
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "http://elpa.gnu.org/packages/")))
-
 (package-initialize)
-;; (setq package-check-signature nil)
 (setq package-check-signature nil)
 (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-
-;; Initialize use-package
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-;;; windows compatibility
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize))
-(setq w32-use-native-file-dialog t)
-(setq tramp-mode nil)
-(setq explicit-shell-file-name "c:/Program Files/Git/git-bash")
-(setq shell-file-name "bash")
-(setq shell-command-switch "-c")
-(setenv "BASH_ENV" "~/.bashrc")
-
-;;; Emacs Session management
-(setq desktop-save 'ask)
 (setq confirm-kill-emacs #'y-or-n-p)
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+(defalias 'yes-or-no-p 'y-or-n-p)
 
-;; Auto-saves and backups
+(defun insert-caps-accentuated-e ()
+    "Insert capital é at point"
+    (interactive)
+    (insert "É"))
+
+  (global-set-key (kbd "M-é") 'insert-caps-accentuated-e)
+
+(define-key global-map "\M-n" 'forward-paragraph)
+(define-key global-map "\M-p" 'backward-paragraph)
+
+(global-auto-revert-mode)
+
 (let ((dir ".emacs-backups"))
   (setq auto-save-file-name-transforms `(("\\([^/]*/\\)*\\([^/]*\\)\\'" ,(concat dir "/\\2")))
         backup-directory-alist `((".*" . ,dir))))
 
-;; Encodage en UTF-8
+(setq w32-use-native-file-dialog t)
+
+(setq tramp-mode nil)
+
+(setq explicit-shell-file-name my/shell-file-name)
+(setq shell-file-name "bash")
+(setq shell-command-switch "-c")
+(setenv "BASH_ENV" my/bash-profile-path)
+
 (prefer-coding-system 'utf-8)
 (setq coding-system-for-read 'utf-8)
 (setq coding-system-for-write 'utf-8)
 (setq inhibit-compacting-font-caches t)
-(with-eval-after-load 'font-lock
-  (unless (facep 'font-lock-operator-face)
-    (copy-face 'font-lock-keyword-face 'font-lock-operator-face)))
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-language-environment "UTF-8")
-(prefer-coding-system 'utf-8)
 
-;; Appearance customization
+;; (with-eval-after-load 'font-lock
+;;   (unless (facep 'font-lock-operator-face)
+;;     (copy-face 'font-lock-keyword-face 'font-lock-operator-face)))
+
 (setq inhibit-startup-message t)
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
-(tooltip-mode -1)           ; Disable tooltips
+(tooltip-mode 1)           ; Disable tooltips
 (set-fringe-mode 10)        ; Give some breathing room
 (menu-bar-mode -1)          ; Disable the menu bar
 (global-hl-line-mode +1)    ;Highlight current line
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (add-to-list 'default-frame-alist '(fullscreen . fullheight))
-(column-number-mode)
-(global-display-line-numbers-mode t)
 (setq visible-bell t)
 
-;;; Themes and modeline
+(column-number-mode)
+(global-display-line-numbers-mode t)
+
+(dolist (mode '(org-mode-hook
+                pdf-view-mode-hook
+                doc-view-mode-hook
+                image-mode-hook
+                term-mode-hook
+                shell-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode -1))))
+
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1))
 (use-package all-the-icons)
-(unless (package-installed-p 'doom-themes)
-  (all-the-icons-install-fonts))
+
 (use-package doom-themes
   :init (load-theme 'doom-one t))
 
-;; Disable line numbers for some modes
-(dolist (mode '(org-mode-hook
-		pdf-view-mode-hook
-                term-mode-hook
-                shell-mode-hook
-                eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+(use-package focus
+  :commands focus-mode)
 
-(add-hook 'image-mode-hook (lambda () (display-line-numbers-mode -1)))
-
-;;; Dashboard
 (use-package dashboard
   :ensure t
   :config
   (dashboard-setup-startup-hook)
-  (setq dashboard-icon-type 'all-the-icons) ;;
+  (setq dashboard-icon-type 'all-the-icons) 
   (setq dashboard-set-file-icons t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-set-navigator t)
-  (setq dashboard-banner-logo-title "Time to work")
-  (setq dashboard-startup-banner "~/.emacs.d/logo/logo_amplitude_2.png")
   (setq dashboard-set-init-info t)
-  (setq dashboard-footer-messages
-	'("En mode loque"
-	  "Maitrise de la suite office (⌐□_□)"
-	  "While any text editor can save your files, only Emacs can save your soul"
-	  "You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
-	  "Les barreaux lasers c'est comme les cyclistes, plus c'est dopé, plus il y a de gain."
-	  "When I see a bird that walks like a duck and swims like a duck and quacks like a duck, I call that bird a duck"
-	  "Gaussian beam waist = lambda f / pi d"
-	  "Top-hat beam waist = 1.22 lambda f / d"
-	  ))
   )
 
+(global-set-key (kbd "C-& C-d") 'dashboard-open)
 
-;; Ivy and Counsel
+(with-eval-after-load "dashboard"
+  (setq dashboard-banner-logo-title "Time to work")
+  (setq dashboard-startup-banner my/startup-banner)
+  (setq dashboard-footer-messages
+        '("En mode loque"
+          "Maitrise de la suite office (⌐□_□)"
+          "While any text editor can save your files, only Emacs can save your soul"
+          "You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
+          "Les barreaux lasers c'est comme les cyclistes, plus c'est dopé, plus il y a de gain."
+          "When I see a bird that walks like a duck and swims like a duck and quacks like a duck, I call that bird a duck"
+          "Gaussian beam waist = lambda f / pi d"
+          "Top-hat beam waist = 1.22 lambda f / d"
+          )))
+
+(run-at-time (current-time) 300 'recentf-save-list)
+(add-to-list 'recentf-exclude my/recentf-path)
+(add-to-list 'recentf-exclude my/bookmarks-path)
 
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper)
          :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)	
-         ("C-l" . ivy-alt-done))
+         ("TAB" . ivy-alt-done))
   :config
   (ivy-mode 1))
 
@@ -131,9 +146,13 @@
 (use-package ivy-rich
   :init
   (ivy-rich-mode 1))
+
 (use-package all-the-icons-ivy-rich
   :ensure t
-  :init (all-the-icons-ivy-rich-mode 1))
+  :init (all-the-icons-ivy-rich-mode 1)
+  :custom
+  (setq all-the-icons-ivy-rich-icon t)
+  (setq all-the-icons-ivy-rich-color-icon t))
 
 (use-package ivy-prescient
   :after counsel
@@ -141,24 +160,6 @@
   (ivy-prescient-mode 1)
   (prescient-persist-mode 1))
 
-;; Company 
-(use-package company
-  :config
-  (global-company-mode 1))
-
-(use-package company-prescient
-  :after company
-  :config
-  (company-prescient-mode 1))
-
-;; Which key
-(use-package which-key
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 1))
-
-;; helpful
 (use-package helpful
   :custom
   (counsel-describe-function-function #'helpful-callable)
@@ -169,155 +170,331 @@
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
-;; Flycheck
-
-(use-package flycheck
-  :hook python-mode
+(use-package company
   :config
-  (flycheck-define-checker grammalecte
-    "A French grammar checker using Grammalecte."
-    :command ("C:/Users/rhumblot/Anaconda3/envs/data/python.exe"
-              "c:/Users/rhumblot/.emacs.d/Grammalecte/grammalecte_flycheck.py" source)
-    :standard-input t
-    :error-patterns
-    (
-     ;; warning avec plage de colonnes
-     (warning line-start "<stdin>:" line ":" column "-" end-column ": warning: " (message) line-end)
-     (error   line-start "<stdin>:" line ":" column "-" end-column ": error: " (message) line-end)
-     )
-    :modes (text-mode markdown-mode latex-mode org-mode))
-  (add-to-list 'flycheck-checkers 'grammalecte)
-  (flycheck-add-next-checker 'grammalecte 'tex-chktex)
-  (add-hook 'text-mode-hook #'flycheck-mode)
-  (add-hook 'latex-mode-hook #'flycheck-mode)
-  (add-hook 'after-init-hook #'global-flycheck-mode)
-  (setq-default flycheck-emacs-lisp-load-path 'inherit)
-  (setq flycheck-flake8-maximum-line-length 79)
-  )
+  (global-company-mode 1))
 
+(use-package company-prescient
+  :after company
+  :config
+  (company-prescient-mode 1)
+  (prescient-persist-mode 1))
 
-
-
-
-
-
-
-
-
-
-
-;; Save recentf at regular intervals
-(run-at-time (current-time) 300 'recentf-save-list)
-;; Exclude the recentf file itself
-(add-to-list 'recentf-exclude
-             (expand-file-name "~/.emacs.d/recentf")
-	     );;;
-(add-to-list 'recentf-exclude
-	     (expand-file-name "~/.emacs.d/bookmarks"))
-
-(use-package focus
-  :commands focus-mode)
-
-;;Add escape as an escape key
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-;; Add shortcut for accentuated é
-(global-set-key (kbd "M-é") 'insert-caps-accentuated-e)
-(global-set-key (kbd "C-& C-d") 'dashboard-open)
-;; Autocompletion and finding files
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 1))
 
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode)
-  :config (setq all-the-icons-dired-monochrome nil))
-;; Whether display the icons
-(setq all-the-icons-ivy-rich-icon t)
+  :config
+  (setq all-the-icons-dired-monochrome nil))
 
-;; Whether display the colorful icons.
-;; It respects `all-the-icons-color-icons'.
-(setq all-the-icons-ivy-rich-color-icon t)
+(use-package yasnippet
+  :hook (LaTeX-mode . yas-minor-mode)
+  (python-mode . yas-minor-mode)
+  :config
+  (setq my/yas-snippet-dirs  (expand-file-name "snippets" user-emacs-directory))
+)
 
+(use-package flycheck
+:config
+(global-flycheck-mode)
+(setq-default flycheck-emacs-lisp-load-path 'inherit))
 
+(with-eval-after-load 'flycheck
+    (setq flycheck-flake8-maximum-line-length 79))
 
-;;Magit
-(use-package magit
-  :defer t
-  :commands (magit)
+(defun my/grammalecte-command (source)
+  (list my/python-data-path my/grammalecte-script-path source))
+
+(with-eval-after-load 'flycheck
+  (flycheck-define-checker grammalecte
+    "A French grammar checker using Grammalecte."
+    :command ("python"
+            (eval my/grammalecte-script-path)
+            "-")
+    :standard-input t
+    :error-patterns
+    (
+     (warning line-start "<stdin>:" line ":" column "-" end-column ": warning: " (message) line-end)
+     (error   line-start "<stdin>:" line ":" column "-" end-column ": error: " (message) line-end)
+     )
+    :modes (text-mode markdown-mode LaTeX-mode org-mode))
+  (add-to-list 'flycheck-checkers 'grammalecte)
+  (flycheck-add-next-checker 'grammalecte 'tex-chktex))
+
+(use-package flyspell
+  :after flycheck
+  :init
+  (setq flyspell-sort-corrections nil)
+  :config
+  (setenv "LANG" "fr")
+  (setq ispell-program-name my/hunspell-path)
+  (setq ispell-dictionary "fr")
+  (setq ispell-personal-dictionary
+        (expand-file-name ".ispell" user-emacs-directory))
+  (setq flyspell-delay 1)
+  )
+
+(use-package flyspell-correct
+  :ensure  t
+  :after flyspell
+  :bind (:map flyspell-mode-map
+              ("C-;" . flyspell-correct-at-point))
+  )
+
+(use-package flyspell-correct-ivy
+  :ensure t
+  :demand t
+  :after flyspell-correct
+  )
+
+(defun my/org-mode-setup ()
+  (org-indent-mode 1)
+  (variable-pitch-mode 1)
+  (visual-line-mode 1)
+  (setq visual-fill-column-width 100
+        visual-fill-column-center-text t)
+  (visual-fill-column-mode 1)
+  (text-scale-increase 2)
+  (setq org-ellipsis "▼")
+  (setq org-columns-ellipses "▼")
+  )
+
+(use-package org-bullets
+  :after org
+  :hook (org-mode . org-bullets-mode)
   :custom
-  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●"))
+  )
 
-(setq magit-git-executable '"C:\\Program Files\\Git\\mingw64\\bin\\git.exe")
+(defun my/org-mode-editing-setup ()
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (setq electric-pair-inhibit-predicate
+    (lambda (c)
+      (if (char-equal c ?\<) t (electric-pair-default-inhibit c))))
+)
 
-;; LATEX MODE SETUP
+(defun my/org-mode-agenda-setup ()
 
-(defmacro call-with-negative-argument (command)
-  `(lambda ()
-     (interactive)
-     (,command -1)))
+  (setq org-agenda-hide-tags-regexp "Scheduled")
+  (setq org-agenda-scheduled-leaders '("" ""))
+  (setq org-agenda-include-diary t)
+  (setq calendar-dat-style 'european)
+  (setq diary-show-holidays-flag nil)
+  (setq org-todo-keywords
+	'((sequence "TODO(t)" "|" "DONE(d)")
+	  (sequence "PLAN(p)" "ACTIVE(a)" "|" "Done(d)")))
 
-(with-eval-after-load "latex"
+  (setq org-log-done t)
+
+  (setq org-tag-alist
+	'(("@Me" . ?r)
+	  ("@BEE" . ?e)
+	  ("@BEM" . ?m)
+	  ("@Indus" . ?i)
+	  ("@RGP" . ?g)
+	  ("@Achats" . ?a)
+	  ("@Direction" . ?d))
+	)
+
+  (setq org-agenda-tags-column -100)
+  (setq org-agenda-align-tags t)
+
+  (temp-buffer-resize-mode 1)
+  (setq temp-buffer-max-height 30)
+
+  (setq org-archive-location ".emacs-backups/archives.org::")
+    )
+
+(defun org-archive-done-tasks ()
+  (interactive)
+  (org-map-entries
+   (lambda ()
+     (org-archive-subtree)
+     (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
+   "/DONE" 'tree)
+  )
+
+(defun my/org-babel-tangle-config ()
+  (when (string-equal (buffer-file-name)
+                      (expand-file-name "~/.emacs.d/emacs.org"))
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle))))
+
+(use-package org
+  :pin org
+  :commands (org-capture org-agenda)
+  :hook (
+  (org-mode . my/org-mode-setup)
+  (org-mode . my/org-mode-agenda-setup)
+  (org-mode . my/org-mode-editing-setup)
+  )
+  :config
+  (define-key global-map "\C-cc" 'org-archive-done-tasks)
+  (require 'org-tempo)
+  (add-hook 'org-mode-hook
+  (lambda ()
+  (add-hook 'after-save-hook #'my/org-babel-tangle-config)))
+)
+
+(define-key global-map "\C-ca" 'org-agenda)
+
+(use-package magit
+  :commands (magit-status)
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+  (setq magit-git-executable my/magit-git-executable))
+
+(defun my/latex-config ()
   (setq TeX-auto-save t)
   (setq TeX-parse-self t)
-  (setq-default TeX-master nil)
-  (add-hook 'LaTeX-mode-hook #'latex-extra-mode)
-  (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  (add-hook 'LaTeX-mode-hook #'yas-minor-mode)
-  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-  
+  (setq TeX-save-query nil) 
+  (setq-default TeX-master t))
+
+(defun my/latex-setup ()
+  (visual-line-mode)
+  (LaTeX-math-mode)
+  (flyspell-mode))
+
+(use-package pdf-tools
+      :init
+      (setq pdf-cache-prefetch-delay -1)
+      :config
+      (pdf-tools-install))
+
+(defun my/latex-compilation-parameters ()
+(setq TeX-PDF-mode t
+      TeX-view-program-selection '((output-pdf "PDF Tools"))
+      TeX-source-correlate-start-server t)
+(add-hook 'TeX-after-compilation-finished-functions
+          (lambda (_process) (TeX-view))
+          nil t))
+
+(defun my/latex-editing-parameters ()
+  (setq LaTeX-math-abbrev-prefix "&")
+  (add-to-list 'LaTeX-math-list '(
+                                  ("M-p" "partial" "" 2202)
+                                  ("M-r" "overrightarrow" "" nil)
+                                  ("M-:" "frac" "" nil)
+                                  ("M-c" "text{c.c.}" "" nil)
+                                  ("M-." "dot" "" 15)
+                                  ("SPC" "&" "" nil)))
+  (setq TeX-electric-sub-and-superscript t)
+  (setq LaTeX-electric-left-right-brace t)
+  (setq TeX-electric-math '("$" . "$")))
+
+(defun my/latex-flycheck-parameters ()
   (setq flycheck-chktexrc "~/.chktexrc")
-  (setq reftex-plug-into-AUCTeX t)
-  (setq TeX-PDF-mode t)
-  '(LaTeX-math-abbrev-prefix "&")
-  '(LaTeX-math-list '(("M-p" "partial" "" 2202)))
-  '(TeX-electric-sub-and-superscript t)
-  (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
-	TeX-source-correlate-start-server t)
-  ;; Update PDF buffers after successful LaTeX runs
-  (add-hook 'TeX-after-compilation-finished-functions
-            #'TeX-revert-document-buffer)
-  (define-key LaTeX-mode-map (kbd "C-c u")
-    (defun Latex-insert-unit (value unit)
-      "Prompts for value and unit and insert the latex command that corresponds to this value"
-      (interactive "sValue: \nsUnit: \n")
-      (insert "\\SI{" value "}{" unit "} ")))
+  (setq reftex-plug-into-AUCTeX t))
 
-  (defvar prefix-alist '((?1 "Latin letter" (lambda () (insert "\\nomenclature[a]") 'latin))
-			 (?2 "Greek letter" (lambda () (insert "\\nomenclature[g]") 'greek))
-			 (?3 "Superscript" (lambda () (insert "\\nomenclature[x]") 'super))
-			 (?4 "Subscript" (lambda () (insert "\\nomenclature[z]") 'sub)))
-    "List that associates number letters to descriptions and actions.")
+(defun my/latex-disable-company-capf ()
+    "Remove company-capf backend in LaTeX buffers."
+    (setq-local company-backends
+                (remove 'company-capf company-backends)))
 
-  (defun Latex-insert-prefix ()
-    "Lets the user choose the animal and takes the corresponding action.
-Returns whatever the action returns."
-    (interactive)
-    (let ((choice (read-char-choice (mapconcat (lambda (item) (format "%c: %s" (car item) (cadr item))) prefix-alist "; ")
-				    (mapcar #'car prefix-alist))))
-      (funcall (nth 2 (assoc choice prefix-alist)))))
-  
-  (define-key LaTeX-mode-map (kbd "C-c n")
-    (defun Latex-insert-nomenc (symbol meaning)
-      "Prompts for prefix, abreviation value and its meaning for insertion in the index"
-      (call-interactively  'Latex-insert-prefix)
-      (interactive "sSymbol: \nsMeaning: \n")
-      (insert "{" symbol "}{" meaning "}")))
+(defvar my/si-tokens
+  '((""  . "")
+    ("Yotta" . "\\yotta")
+    ("Zetta" . "\\zetta")
+    ("Exa" . "\\exa")
+    ("Peta" . "\\peta")
+    ("Tera" . "\\tera")
+    ("Giga" . "\\giga")
+    ("Mega" . "\\mega")
+    ("kilo" . "\\kilo")
+    ("hecto" . "\\hecto")
+    ("deca" . "\\deca")
+    ("deci" . "\\deci")
+    ("centi" . "\\centi")
+    ("milli" . "\\milli")
+    ("µ micro" . "\\micro")
+    ("nano" . "\\nano")
+    ("pico" . "\\pico")
+    ("femto" . "\\femto")
+    ("atto" . "\\atto")
+    ("zepto" . "\\zepto")
+    ("yocto" . "\\yocto")
+    ("per" . "\\per")
+    ("meter"   . "\\meter")
+    ("gram"   . "\\gram")
+    ("second"   . "\\second")
+    ("Ampere"   . "\\ampere")
+    ("Kelvin"   . "\\kelvin")
+    ("mole" . "\\mole")
+    ("Candela"  . "\\candela")
+    ("Hertz"  . "\\hertz")
+    ("Newton"   . "\\newton")
+    ("Pascal"  . "\\pascal")
+    ("Joule"   . "\\joule")
+    ("Watt"   . "\\watt")
+    ("Coulomb"   . "\\coulomb")
+    ("Volt"   . "\\volt")
+    ("Farad"   . "\\farad")
+    ("Ω ohm"   . "\\ohm")
+    ("Siemens"   . "\\siemens")
+    ("Weber"  . "\\weber")
+    ("Telsa"   . "\\tesla")
+    ("Henry"   . "\\henry")
+    ("lumen"  . "\\lumen")
+    ("lux"  . "\\lux")
+    ("Becquerel"  . "\\becquerel")
+    ("Gray"  . "\\gray")
+    ("Sievert"  . "\\sievert")
+    ("katal" . "\\katal")
+    ("² squared" . "^2")
+    ("inv" . "^{-1}")))
 
-  (define-key LaTeX-mode-map (kbd "C-c i")
-    (defun Latex-include-graphics (width filename)
-      "Prompts for figure width and figure path and include image at path with width = width * linewidth"
-      (interactive "sWidth: \nfInsert file name: ")
-      (insert "\\includegraphics[width="width"\\linewidth]{"(file-relative-name filename)"}"))))
-
-(defun insert-caps-accentuated-e ()
-  "Insert capital é at point"
+(defun my/latex-insert-SI ()
   (interactive)
-  (insert "É"))
+  (let ((value (read-string "Value: "))
+        key token tokens)
+
+    (while
+        (not
+         (string-empty-p
+          (setq key
+                (completing-read
+                 "Token (RET to finish): "
+                 (mapcar #'car my/si-tokens)
+                 nil nil nil nil ""))))
+
+      (setq token (cdr (assoc key my/si-tokens)))
+      (when token
+        (push token tokens)))
+
+    (insert
+     (format "\\SI{%s}{%s}"
+             value
+             (mapconcat #'identity (reverse tokens) "")))))
+
+(defun Latex-include-graphics (width filename)
+  "Prompts for figure width and figure path and include image at path with width = width * linewidth"
+  (interactive "sWidth: \nfInsert file name: ")
+  (insert "\\includegraphics[width="width"\\linewidth]{"(file-relative-name filename)"}"))
+
+(use-package eglot
+  :after latex
+  :hook (
+         (LaTeX-mode . (lambda ()
+                         (setq eglot-server-programs `((latex-mode . ("texlab"))))
+                         (eglot-ensure))))
+   :config
+   (setq eglot-connect-timeout 10)
+   (setq eglot-autoshutdown t)
+   (define-key LaTeX-mode-map (kbd "C-c l r r") #'eglot-rename)
+   (define-key LaTeX-mode-map (kbd "C-c l = =") #'eglot-format-buffer)
+   )
 
 (defun Create-new-LaTeX-document (destination)
   "Copie récursivement le contenu d'un dossier source fixe vers DESTINATION."
   (interactive
    (list (read-directory-name "Coller le contenu du dossier fixe ici : ")))
-  (let ((source "u:/Autres/Template/Document_latex/")) ;; Remplace ceci par ton dossier fixe
+  (let ((source my/latex-template-path))
     (unless (file-directory-p source)
       (error "Le dossier source n'existe pas ou n'est pas un répertoire"))
     (unless (file-directory-p destination)
@@ -329,171 +506,65 @@ Returns whatever the action returns."
           (copy-file file target t))))
     (message "Copie terminée vers %s" destination)))
 
-;; Use pdf-tools to open PDF files
-(use-package pdf-tools
-  :defer)
-(pdf-loader-install) ; On demand loading, leads to faster startup time
-
-
-;;Ispell
-(use-package flyspell
-  :after flycheck
-  :init
-  (setq flyspell-sort-corrections nil)
-  )
-
-(setq ispell-program-name "c:/Program Files (x86)/Hunspell/bin/hunspell.exe")
-(setq ispell-personal-dictionary "~/.emacs.d/.ispell")
-(setq ispell-local-dictionary-alist '(
-				      (nil
-				       "[[:alpha:]]"
-				       "[^[:alpha:]]"
-				       "[']"
-				       t
-				       ("-d" "en_US" "-p" "D:\\hunspell\\share\\hunspell\\personal.en")
-				       nil
-				       iso-8859-1)
-				      ("francais"
-				       "[[:alpha:]ÀÂÇÈÉÊËÎÏÔÙÛÜàâçèéêëîïôùûü]"
-				       "[^[:alpha:]ÀÂÇÈÉÊËÎÏÔÙÛÜàâçèéêëîïôùûü]"
-				       "[-']"
-				       t
-				       ("-d" "fr" "-p" 
-					"D:\\hunspell\\share\\hunspell\\personal.fr")
-				       nil
-				       utf-8)
-				      ))
-(require 'ispell)
-
-(use-package flyspell-correct
-  :ensure  t
-  :commands (ispell-buffer)
-  :bind (:map flyspell-mode-map
-              ("C-;" . flyspell-correct-at-point))
-  )
-
-(use-package flyspell-correct-ivy
-  :ensure t
-  :demand t
-  :after flyspell-correct
-  )
-
-;; ORGMODE SETUP
-(defun efs/org-mode-setup ()
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (visual-line-mode 1))
-
-;; Org Mode Configuration ------------------------------------------------------
-(defun scale-up-font ()
-  (text-scale-increase 2))
-
-(use-package org
-  :pin org
-  :commands (org-capture org-agenda)
-  :hook ((org-mode . efs/org-mode-setup)
-	 (org-mode . scale-up-font))
+(use-package tex
+  :ensure auctex
+  :mode ("\\.tex\\'" . LaTeX-mode)
+  :hook ((LaTeX-mode . my/latex-config)
+	 (LaTeX-mode . my/latex-setup)
+	 (LaTeX-mode . my/latex-compilation-parameters)
+	 (LaTeX-mode . my/latex-editing-parameters)
+	 (LaTeX-mode . my/latex-flycheck-parameters)
+	 (LaTeX-mode . my/latex-disable-company-capf))
   :config
-  (setq org-ellipsis " ▼")
-  (setq org-agenda-hide-tags-regexp "Scheduled")
-  (setq org-agenda-scheduled-leaders '("" ""))
-  (setq org-todo-keywords
-	'((sequence "TODO(t)" "|" "DONE(d)")
-	  (sequence "PLAN(p)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
-  (setq org-log-done t)
-  (setq org-tag-alist '(("@Me" . ?r) ("@BEE" . ?e) ("@BEM" . ?m) ("@Indus" . ?i) ("@RGP" . ?g)))
-  (setq org-agenda-tags-column -100)
-  (setq temp-buffer-resize-mode t)
-  (setq temp-buffer-max-height 30)
-  (setq org-agenda-align-tags t)
-  (setq org-archive-location ".emacs-backups/archives.org::")
-  (dolist (files org-agenda-files)
-    (add-to-list 'recentf-exclude files)
-    ))
+  (with-eval-after-load 'latex
+    (define-key LaTeX-mode-map (kbd "C-c u") #'my/latex-insert-SI)
+    (define-key LaTeX-mode-map (kbd "C-c i") #'Latex-include-graphics)))
 
-(define-key global-map "\C-cl" 'org-store-link)
-(define-key global-map "\C-ca" 'org-agenda)
-(define-key global-map "\M-n" 'forward-paragraph)
-(define-key global-map "\M-p" 'backward-paragraph)
-(define-key global-map "\C-cc" 'org-archive-done-tasks)
+(setq python-shell-interpreter "python"
+      python-shell-interpreter-args "-i")
 
-(use-package org-bullets
-  :after org
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
-
-(defun efs/org-mode-visual-fill ()
-  (setq visual-fill-column-width 100
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
-
-(defun org-archive-done-tasks ()
+(defun my/run-python-buffer-in-process ()
+  "Exécute le buffer Python dans un processus en arrière-plan et affiche
+la sortie (y compris les erreurs) dans *Messages*.  
+Si le buffer n'est pas sauvegardé, demande de le sauvegarder avant l'exécution."
   (interactive)
-  (org-map-entries
-   (lambda ()
-     (org-archive-subtree)
-     (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
-   "/DONE" 'tree))
+  (when (or (not (buffer-file-name))
+            (buffer-modified-p))
+    (if (y-or-n-p "Le buffer n'est pas sauvegardé. Sauvegarder maintenant ? ")
+        (save-buffer)
+      (error "Le buffer doit être sauvegardé pour exécuter le script")))
+  (let ((file (buffer-file-name)))
+    (let ((output-buffer (get-buffer-create "*python-output-temp*")))
+      (with-current-buffer output-buffer
+        (erase-buffer))
+      (let ((proc (start-process "python-process"
+                                 output-buffer
+                                 "python"
+                                 "-u"
+                                 file)))
+        (set-process-filter
+         proc
+         (lambda (process string)
+           (with-current-buffer (process-buffer process)
+             (goto-char (point-max))
+             (insert string))))
+        (set-process-sentinel
+         proc
+         (lambda (process event)
+           (when (memq (process-status process) '(exit signal))
+             (let ((output (with-current-buffer (process-buffer process)
+                             (buffer-string))))
+               (message "%s" output)))))))))
 
-(use-package visual-fill-column
-  :hook (org-mode . efs/org-mode-visual-fill))
-
-(add-to-list 'auto-mode-alist '("\\.pyx\\'" . python-mode))
-
-;; PYTHON
-;; Set correct Python interpreter
-(require 'python)
-(with-eval-after-load 'python
-  (setq pyvenv-post-activate-hooks
-	(list (lambda ()
-		(setq python-shell-interpreter (concat pyvenv-virtual-env "python"))
-		)))
-  (setq pyvenv-post-deactivate-hooks
-	(list (lambda ()
-		(setq python-shell-interpreter "python")
-		))))
-
-(setq lsp-session-file (expand-file-name "lsp-session-v1" user-emacs-directory))
-(setq lsp-client-packages '(lsp-pyright))
-(setq lsp-pyright-multi-root nil)
-(setq lsp-auto-guess-root t)
-(setq lsp-enable-file-watchers nil) ;; optionnel, réduit les conflits de fichiers
-
-(use-package lsp-mode
-  :ensure t
-  :hook ((python-mode . lsp))
-  :commands lsp
-  :init
-  (setq lsp-keymap-prefix "C-c l")
-  (setq lsp-enable-multi-root t)
-  (setq lsp-allow-server-download nil)
-  (setq lsp-prefer-flymake nil) ;; utiliser flycheck plutôt que flymake
-  (setq lsp-log-io nil))        ;; désactiver le log IO pour plus de stabilité
-
-;; Pyright LSP pour Python
-(use-package lsp-pyright
-  :ensure t
-  :after lsp-mode
-  :hook (python-mode . (lambda ()
-                         ;; forcer Python et désactiver multi-root qui cause "//"
-                         (require 'lsp-pyright)
-                         (setq lsp-pyright-python-executable-cmd "python")
-                         (setq lsp-pyright-multi-root nil)
-                         (lsp)))
-  :config
-  (setq lsp-disabled-clients '(pyls))
-  (define-key python-mode-map (kbd "C-c M-m")
-    (defun python-init-script (doc)
-      "Insert the script documentation, import typical packages and writes the main fun"
-      (interactive "sDocumentation: ")
-      (insert "\"\"\" "doc"
+(defun my/python-init-script (doc)
+  "Insert the script documentation, import typical packages and writes the main fun"
+  (interactive "sDocumentation: ")
+  (insert "\"\"\" "doc"
 Author: Raphaël Humblot
 Date:")
       (insert (format-time-string "%Y-%m-%d %H:%M:%S"))
       (insert "\"\"\"
 
-import os
 from pathlib import Path
 import numpy as np
 import numpy.typing as npt
@@ -507,215 +578,140 @@ def main():
 if __name__ == \"__main__\":
     main()
 "
-    )))
-  (add-hook 'python-mode-hook 'electric-pair-mode)
-  (define-key python-mode-map (kbd "C-c M-p")
-    (defun python-insert-current-path ()
-      (interactive)
-      "Insert Path object to current wd"
-      (insert "Path(__file__).parent")))
-  (define-key python-mode-map (kbd "C-c M-f")
-    (defun python-insert-figure-save (name)
-      "Insert fig.savefig command"
-      (interactive "sFigure name: ")
-      (insert "fig.savefig(Path(__file__).parent / \""name".png\", dpi=400, bbox_inches=\"tight\")")))
-  (define-key python-mode-map (kbd "C-<backspace>") 'backward-kill-word)
-  (defun black-format-current-buffer ()
+    ))
+
+(defun my/python-insert-path-to-file (filename)
+  "Insert a relative path from current python file to target file. Useful for data import"
+  (interactive "fFile: ")
+  (insert "Path(__file__).parent " "/ " (mapconcat
+                                          (lambda (s) (format "\"%s\"" s))
+                                          (split-string (file-relative-name filename) "/")
+                                          " / ")
+          ))
+
+(defun my/python-insert-figure-save (name)
+  "Insert fig.savefig command"
+  (interactive "sFigure name: ")
+  (insert "fig.savefig(Path(__file__).parent / \""name".png\", dpi=400, bbox_inches=\"tight\")"))
+
+(defun my/black-format-current-buffer ()
   "Format current buffer with black."
   (interactive)
   (when buffer-file-name
     (shell-command (concat "black -q -l 79 \"" buffer-file-name "\""))
-    (revert-buffer t t t)))  ;; recharge le buffer après formatage
-  (define-key python-mode-map (kbd "C-c l = =") 'black-format-current-buffer)
-)
+    (revert-buffer t t )))
 
+(defun my/python-set-keymaps ()
+  (define-key python-mode-map (kbd "C-c M-m") 'my/python-init-script)
+  (define-key python-mode-map (kbd "C-c f") 'my/python-insert-path-to-file)
+  (define-key python-mode-map (kbd "C-c M-f") 'my/python-insert-figure-save)
+  (define-key python-mode-map (kbd "C-<backspace>") 'backward-kill-word)
+  (define-key python-mode-map (kbd "C-c l b") #'my/black-format-current-buffer)
+  (define-key python-mode-map (kbd "C-c C-c") #'my/run-python-buffer-in-process)
+  )
 
+(defun my/lsp-setup ()
+  (setq lsp-keymap-prefix "C-c l")
+  (setq lsp-enable-multi-root t)
+  (setq lsp-allow-server-download nil)
+  (setq lsp-prefer-flymake nil)
+  (setq lsp-log-io nil)
+  (setq lsp-client-packages '(lsp-pyright))
+  (setq lsp-pyright-multi-root nil)
+  (setq lsp-auto-guess-root t)
+  (setq lsp-enable-file-watchers nil)
+  (setq lsp-pyright-python-executable-cmd "python")
+  (setq lsp-enable-which-key-integration 1)
+  )
 
-;; Autocomplétion minimale
-(use-package company
-  :ensure t
-  :hook (after-init . global-company-mode))
+(defun my/lsp-session-localisation ()
+  (setq lsp-session-file (expand-file-name "lsp-session" user-emacs-directory))
+  )
 
-;; Python mode
-(use-package python-mode
-  :ensure t)
+(use-package lsp-mode
+  :hook ((python-mode . lsp-deferred))
+  :commands lsp
+  :init
+  (my/lsp-setup)
+  (my/lsp-session-localisation)
+  )
+
+(use-package lsp-pyright
+  :after lsp-mode
+  :config
+  (setq lsp-disabled-clients '(pyls))
+  )
+
 (use-package lsp-ui
-  :ensure t
-  :commands lsp-ui-mode)
+  :after lsp-mode
+  :hook (lsp-mode . lsp-ui-mode))
 
-;; (setq lsp-pyright-extra-paths []
-;;       lsp-pyright-typechecking-mode "basic"
-;;       lsp-pyright-auto-import-completions t
-;;       lsp-pyright-use-library-code-for-types t
-;;       Désactive certaines règles gênantes
-;;       lsp-pyright-plugins nil
-;;       lsp-pyright-analysis-errors
-;;       '(:reportGeneralTypeIssues nil
-;;         ajoute ici les erreurs que tu veux désactiver
-;;         ))
+(defun my/python-setup ()
+(electric-pair-mode 1))
 
-;; (setq flycheck-highlighting-mode 'lines) moins agressif que underline
+(use-package python
+  :hook ((python-mode . my/python-set-keymaps)
+          (python-mode . my/python-setup)
+  )
 
-
-(use-package flycheck
-  :hook python-mode)
-
-;;;; END PYTHON CoNFIG
-
-(add-hook 'after-init-hook #'global-flycheck-mode)
-(setq-default flycheck-emacs-lisp-load-path 'inherit)
-(setq flycheck-flake8-maximum-line-length 79)
-(setq flycheck-python-pylint-executable "~/Anaconda3/Scripts/pylint")
-(setq elpy-rpc-python-command "~/Anaconda3/envs/data/pythonw.exe")
-
-;; Projectile
-(use-package projectile
-  :diminish projectile-mode
-  :ensure t
-  :config (projectile-mode)
-  (message "Projectile initialized")
-  (setq projectile-enable-caching t
-        projectile-globally-ignored-files
+(defun my/projectile-setup ()
+  (setq projectile-completion-system 'ivy)
+  (setq projectile-enable-caching t)
+  (setq projectile-globally-ignored-files
         (append '(".aux"
-		  "bbl"
-		  "blg"
+                  "bbl"
+                  "blg"
                   "~")
-                projectile-globally-ignored-files)
-	projectile-globally-ignored-directories
-	(append '("*.emacs-backups*")
-		projectile-globally-ignored-directories))
+                projectile-globally-ignored-files))
+  (setq projectile-globally-ignored-directories (append '("*.emacs-backups*")
+                projectile-globally-ignored-directories))
   (if (file-directory-p "u:/Travaux")
       (setq projectile-project-search-path
-	    (append '("u:/Travaux/Projets") projectile-project-search-path)))
-  :custom ((projectile-completion-system 'ivy))
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  (setq projectile-switch-project-action #'project-dired))
+            (append '("u:/Travaux/Projets") projectile-project-search-path)))
+  )
+
+(use-package projectile
+:diminish projectile-mode
+:commands (projectile-find-file projectile-switch-project)
+:bind-keymap ("C-c p" . projectile-command-map)
+:hook (projectile-mode . my/projectile-setup)
+:config (projectile-mode)
+(message "Projectile loaded !"))
 
 (use-package counsel-projectile
   :hook projectile-mode-hook
   :config (counsel-projectile-mode))
 
-(defun my-insert-file-name (filename &optional args)
-  "Insert name of file FILENAME into buffer after point.
-  
-  Prefixed with \\[universal-argument], expand the file name to
-  its fully canocalized path.  See `expand-file-name'.
-  
-  Prefixed with \\[negative-argument], use relative path to file
-  name from current directory, `default-directory'.  See
-  `file-relative-name'.
-  
-  The default with no prefix is to insert the file name exactly as
-  it appears in the minibuffer prompt."
-  ;; Based on insert-file in Emacs -- ashawley 20080926
-  (interactive "*fInsert file name: \nP")
-  (cond ((eq '- args)
-         (insert (file-relative-name filename)))
-        ((not (null args))
-         (insert (expand-file-name filename)))
-        (t
-         (insert filename))))
-
-(global-set-key "\C-cf" 'my-insert-file-name)
-(defalias 'yes-or-no-p 'y-or-n-p)
-
-(use-package languagetool
-  :ensure t
-  :defer t
-  :commands (languagetool-check
-             languagetool-clear-suggestions
-             languagetool-correct-at-point
-             languagetool-correct-buffer
-             languagetool-set-language
-             languagetool-server-mode
-             languagetool-server-start
-             languagetool-server-stop)
-  :config
-  (setq languagetool-java-arguments '("-Dfile.encoding=UTF-8")
-        languagetool-console-command "~/.LanguageTool/languagetool-commandline.jar"
-        languagetool-server-command "~/.LanguageTool/languagetool-server.jar"))
-
 (defun add-dependency (file bool curr-point)
-  "Insert dependencies to file and insert creation command"
-  (interactive
-   (list
-    (read-file-name "*fInsert file name: \nP")
-    (y-or-n-p "Insert dependecies? ")
-    (point)))
-  (insert (file-relative-name file))
-  (if bool (save-excursion
-	     (end-of-buffer)
-	     (insert "\n\n")
-	     (insert (file-relative-name file))
+    "Insert dependencies to file and insert creation command"
+    (interactive
+     (list
+      (read-file-name "*fInsert file name: \nP")
+      (y-or-n-p "Insert dependecies? ")
+      (point)))
+    (insert (file-relative-name file))
+    (if bool (save-excursion
+               (end-of-buffer)
+               (insert "\n\n")
+               (insert (file-relative-name file))
 
 
-	     (defun suppress-messages (func &rest args)
-	       "Suppress message output from FUNC."
-	       ;; Some packages are too noisy.
-	       ;; https://superuser.com/questions/669701/emacs-disable-some-minibuffer-messages
-	       (cl-flet ((silence (&rest args1) (ignore)))
-		 (advice-add 'message :around #'silence)
-		 (unwind-protect
-		     (apply func args)
-		   (advice-remove 'message #'silence))))
+               (defun suppress-messages (func &rest args)
+                 "Suppress message output from FUNC."
+                 ;; Some packages are too noisy.
+                 ;; https://superuser.com/questions/669701/emacs-disable-some-minibuffer-messages
+                 (cl-flet ((silence (&rest args1) (ignore)))
+                   (advice-add 'message :around #'silence)
+                   (unwind-protect
+                       (apply func args)
+                     (advice-remove 'message #'silence))))
 
-	     ;; Suppress "Cleaning up the recentf...done (0 removed)"
-	     (advice-add 'recentf-cleanup :around #'suppress-messages)(insert " : "))))
+               ;; Suppress "Cleaning up the recentf...done (0 removed)"
+               (advice-add 'recentf-cleanup :around #'suppress-messages)(insert " : "))))
 
-(defun add-add-dependency ()
-  (local-set-key (kbd "C-c C-d") 'add-dependency))
-(setq org-agenda-include-diary t)
+  (defun add-add-dependency ()
+    (local-set-key (kbd "C-c C-d") 'add-dependency))
+
 (add-hook 'makefile-mode-hook #'add-add-dependency)
-(add-hook 'after-init-hook #'projectile-global-mode)  
-;;Custom set varible to switch to another .el file ASAP
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(LaTeX-electric-left-right-brace t)
- '(LaTeX-math-abbrev-prefix "&")
- '(LaTeX-math-list
-   '(("M-p" "partial" "" 2202)
-     ("M-r" "overrightarrow" "" nil)
-     ("M-:" "frac" "" nil)
-     ("M-c" "text{c.c.}" "" nil)
-     ("M-." "dot" "" 15)
-     ("SPC" "&" "" nil)))
- '(TeX-electric-math '("$" . "$"))
- '(TeX-electric-sub-and-superscript t)
- '(calendar-date-style 'european)
- '(conda-anaconda-home "~/Anaconda3")
- '(custom-safe-themes
-   '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "944d52450c57b7cbba08f9b3d08095eb7a5541b0ecfb3a0a9ecd4a18f3c28948" default))
- '(diary-show-holidays-flag nil)
- '(ignored-local-variable-values
-   '((languagetool-local-disabled-rules "CURRENCY" "WHITESPACE_RULE" "EN_UNPAIRED_BRACKETS" "ALONG_TIME" "EN_UNPAIRED_BRACKETS" "EN_UNPAIRED_BRACKETS" "EN_COMPOUNDS_TWO_STEP" "EN_UNPAIRED_BRACKETS")))
- '(ispell-local-dictionary "fr")
- '(org-agenda-files
-   '("u:/Projets/Support_HCB/HCB_general.org" "u:/Projets/Avance_de_phase_LDRS/LDRS.org" "u:/Projets/Support_interpid_flash/interpid-flash.org" "u:/Projets/to_do_list_divers.org" "u:/Autres/Formation/formation.org" "o:/2 - ACTIVITES/PLT - FE (LAS0000893)/ILB/1- Project management/1.1- Report Meetings/1.1.2- SP3 DPSSL Pre-Amplifier/Sprints_SP3/Sprints_SP3.org" "o:/2 - ACTIVITES/PLT - FE (LAS0000893)/ILB/2- Production/2.3- SP3 DPSSL Pre Amplifier/2.6 - Technical design/Design_SPO/CDC_SPO/CDC_SPO.org" "u:/Projets/DPSSL_40J_diode/DPSSL.org" "c:/Users/rhumblot/.emacs.d/recurring_tasks.org" "u:/Projets/Measurements_farfield_sbs/farfield_sbs.org" "u:/Projets/Demo_sbs_double_pass/Demo_sbs_double_pass.org"))
- '(package-selected-packages
-   '(all-the-icons-nerd-fonts gnu-elpa-keyring-update lsp-ui lsp-pyright lsp-mode languagetool flycheck-languagetool flycheck-grammalecte all-the-icons-ivy-rich all-the-icons-ivy page-break-lines elpy company-prescient ivy-prescient py-autopep8 blacken pyenv flyspell-correct-ivy flyspell-correct flycheck-aspell visual-fill-column org-bullets counsel-projectile projectile taxy-magit-section pdf-tools auctex magit ivy command-log-mode doom-modeline use-package conda))
- '(safe-local-variable-values
-   '((languagetool-local-disabled-rules "UNLIKELY_OPENING_PUNCTUATION" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "CURRENCY" "CURRENCY" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE")
-     (languagetool-local-disabled-rules "NON_STANDARD_WORD" "NON_STANDARD_WORD" "NON_STANDARD_WORD" "CURRENCY" "CURRENCY" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE")
-     (ispell-local-dictionnary . "en_GB")
-     (ispell-local-dictionary . en-GB)
-     (languagetool-local-disabled-rules "CURRENCY" "WHITESPACE_RULE" "EN_UNPAIRED_BRACKETS" "ALONG_TIME" "EN_UNPAIRED_BRACKETS" "EN_UNPAIRED_BRACKETS" "EN_COMPOUNDS_TWO_STEP" "EN_UNPAIRED_BRACKETS")
-     (languagetool-local-disabled-rules "ALLOW_TO")
-     (languagetool-local-disabled-rules "EN_UNPAIRED_QUOTES" "UPPERCASE_SENTENCE_START" "COMMA_COMPOUND_SENTENCE_2" "UPPERCASE_SENTENCE_START" "UPPERCASE_SENTENCE_START" "CURRENCY" "EN_UNPAIRED_QUOTES" "UPPERCASE_SENTENCE_START" "EN_UNPAIRED_QUOTES" "EN_UNPAIRED_QUOTES" "EN_UNPAIRED_QUOTES" "EN_WORD_COHERENCY" "NON_STANDARD_WORD" "CURRENCY" "UPPERCASE_SENTENCE_START" "EN_WORD_COHERENCY" "CURRENCY" "CURRENCY" "NON_STANDARD_WORD" "CURRENCY" "WHITESPACE_RULE" "WHITESPACE_RULE" "WHITESPACE_RULE" "CURRENCY" "NON_STANDARD_WORD" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "WHITESPACE_RULE")
-     (languagetool-local-disabled-rules "ALLOW_TO" "EN_UNPAIRED_BRACKETS" "WHITESPACE_RULE" "COMMA_PARENTHESIS_WHITESPACE" "COMMA_PARENTHESIS_WHITESPACE" "CURRENCY")))
- '(warning-suppress-log-types '((comp) (comp) (comp) (auto-save)))
- '(warning-suppress-types '((comp) (comp) (auto-save))))
-
-
-;;; init.el ends here
+(message "Emacs init buffer evaluated to the end !")

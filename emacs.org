@@ -1,0 +1,1200 @@
+#+title Emacs configuration documentation
+#+PROPERTY: header-args:emacs-lisp :tangle ./init.el
+* Tasks
+** DONE Raccourci clavier pour executer buffer python actif dans eshell
+CLOSED: [2026-03-16 lun. 12:12] SCHEDULED: <2026-03-16 lun.>
+** TODO Gestion pdb dans python
+SCHEDULED: <2026-03-17 mar.>
+** TODO Commit modification emacs
+SCHEDULED: <2026-03-16 lun.>
+
+* Variables locales:
+
+#+begin_src emacs-lisp
+  (setq my/python-data-path (expand-file-name "~/Anaconda3/envs/data/python.exe"))
+  (setq my/grammalecte-script-path (expand-file-name "~/.emacs.d/grammalecte/grammalecte_flycheck.py"))
+  (setq my/shell-file-name "c:/Program Files/Git/git-bash")
+  (setq my/bash-profile-path (expand-file-name "~/.bashrc"))
+  (setq my/startup-banner (expand-file-name "~/.emacs.d/logo/logo_amplitude_2.png"))
+  (setq my/recentf-path (expand-file-name "~/.emacs.d/recentf"))
+  (setq my/bookmarks-path (expand-file-name "~/.emacs.d/bookmarks"))
+  (setq my/magit-git-executable "C:\\Program Files\\Git\\mingw64\\bin\\git.exe")
+  (setq my/latex-template-path "u:/Autres/Template/Document_latex/")
+  (setq my/hunspell-path "C:/msys64/mingw64/bin/hunspell.exe")
+  (setq custom-file (concat user-emacs-directory "custom.el"))
+  (load custom-file 'noerror)
+#+end_src
+
+
+* Package management
+
+** Archives managements
+
+Downloads the main package archives for emacs.
+
+To this date, we need to disable package signature for melpa. Might be because of windows.
+same thing, the line that sets gnutls algorithm priority disables version TlS1.3. This allows communication with ELPA.
+
+#+begin_src emacs-lisp
+(require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "http://elpa.gnu.org/packages/")))
+(package-initialize)
+(setq package-check-signature nil)
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+#+end_src
+
+** Use-package
+
+Forces usage of use-package. Si use-package n'est pas installé, l'installe. Puis require le packet. Le setq use-package always ensure t permet d'installer automatiquement les paquets utilisés si manquants.
+
+#+begin_src emacs-lisp
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+(require 'use-package)
+(setq use-package-always-ensure t)
+#+end_src
+
+
+* Basic UI configuration
+
+** Emacs behaviour
+
+Demande confirmation avant de fermer emacs par raccourci classique
+
+#+begin_src emacs-lisp
+  (setq confirm-kill-emacs #'y-or-n-p)
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+Permet l'insersion de É par la commande M-é de manière globale
+
+#+begin_src emacs-lisp
+(defun insert-caps-accentuated-e ()
+    "Insert capital é at point"
+    (interactive)
+    (insert "É"))
+
+  (global-set-key (kbd "M-é") 'insert-caps-accentuated-e)
+#+end_src
+
+Redéfinition de M-p et M-n pour naviguer de paragraphes en paragraphes
+
+#+begin_src emacs-lisp
+(define-key global-map "\M-n" 'forward-paragraph)
+(define-key global-map "\M-p" 'backward-paragraph)
+#+end_src
+
+Revert buffer automatiquement
+
+#+begin_src emacs-lisp
+(global-auto-revert-mode)
+#+end_src
+** Emacs backups
+
+Enregistre les fichiers de backup dans un sous dossier ".emacs-backups".
+
+#+begin_src emacs-lisp 
+  (let ((dir ".emacs-backups"))
+    (setq auto-save-file-name-transforms `(("\\([^/]*/\\)*\\([^/]*\\)\\'" ,(concat dir "/\\2")))
+          backup-directory-alist `((".*" . ,dir))))
+
+#+end_src
+
+
+* Windows usage
+
+** Utilisation de windows
+
+Utilisation des boites de dialogues natives de windows dans Emacs.
+
+#+begin_src emacs-lisp
+(setq w32-use-native-file-dialog t)
+#+end_src
+
+Desactivation de tamp (ouverture des fichiers ssh sudo et ftp).
+
+#+begin_src emacs-lisp
+(setq tramp-mode nil)
+#+end_src
+
+** Utilisation de bash
+
+- donne l'emplacement de bash et import l'environnement bash utilisé.
+
+#+begin_src emacs-lisp
+(setq explicit-shell-file-name my/shell-file-name)
+(setq shell-file-name "bash")
+(setq shell-command-switch "-c")
+(setenv "BASH_ENV" my/bash-profile-path)
+#+end_src
+
+** Encodage
+
+#+begin_src emacs-lisp
+(prefer-coding-system 'utf-8)
+(setq coding-system-for-read 'utf-8)
+(setq coding-system-for-write 'utf-8)
+(setq inhibit-compacting-font-caches t)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-language-environment "UTF-8")
+#+end_src
+
+
+* Appearance customization
+
+** Font lock (désactivé)
+
+Fait apparaître les opérateurs de la même couleur que les keyword (if, then, else)
+
+#+begin_src emacs-lisp
+  ;; (with-eval-after-load 'font-lock
+  ;;   (unless (facep 'font-lock-operator-face)
+  ;;     (copy-face 'font-lock-keyword-face 'font-lock-operator-face)))
+#+end_src
+
+** Emacs standard appearance customization
+
+- Désactivation du buffer de démarrage
+- Désactivation des barre de défilement à droite des buffers
+- Désactivation de la barre d'outils en haut de la fenêtre
+- Activation des popups lorsque la souris est sur un élément
+- Augmentation de la marge sur les bords des buffers (à 10 pt)
+- Désactivation de la barre de menu classique
+- Highlight de la ligne sur laquelle le point est
+- Démarrage d'emacs en fullscreen
+- Démarrage d'emacs occupant l'écran entier
+- Remplacement du signal sonore d'emacs par un clignotement de l'écran
+  
+#+begin_src emacs-lisp
+  (setq inhibit-startup-message t)
+  (scroll-bar-mode -1)        ; Disable visible scrollbar
+  (tool-bar-mode -1)          ; Disable the toolbar
+  (tooltip-mode 1)           ; Disable tooltips
+  (set-fringe-mode 10)        ; Give some breathing room
+  (menu-bar-mode -1)          ; Disable the menu bar
+  (global-hl-line-mode +1)    ;Highlight current line
+  (add-to-list 'initial-frame-alist '(fullscreen . maximized))
+  (add-to-list 'default-frame-alist '(fullscreen . fullheight))
+  (setq visible-bell t)
+#+end_src
+
+** Line numbering
+
+- Affichage du numéro de ligne/colonne dans la modeline
+- Affichage du numéro de ligne sur tous les buffers
+- Spécification de tous les modes dans lesquel le line number est désactivé
+
+#+begin_src emacs-lisp
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
+
+  (dolist (mode '(org-mode-hook
+                  pdf-view-mode-hook
+                  doc-view-mode-hook
+                  image-mode-hook
+                  term-mode-hook
+                  shell-mode-hook
+                  eshell-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode -1))))
+#+end_src
+
+** Modeline
+
+- Installation de la doom modeline et des incones utilisés
+#+begin_src emacs-lisp
+  (use-package doom-modeline
+    :ensure t
+    :init (doom-modeline-mode 1))
+  (use-package all-the-icons)
+#+end_src
+
+** Thème emacs
+
+#+begin_src emacs-lisp
+  (use-package doom-themes
+    :init (load-theme 'doom-one t))
+#+end_src
+
+** Focus mode
+
+Demande l'installation de focus mode mais ne le chargera qu'a la demande lors de l'utilisation de M-x focus-mode
+
+#+begin_src emacs-lisp
+(use-package focus
+  :commands focus-mode)
+#+end_src
+
+
+* Dashboard
+
+
+** Package customisation
+
+- Installe le package dashboard
+- Remplace le buffer initial d'emacs par le dashboard
+- Utilise les icones d'all-the-icons pour le dashboard
+- Affiche le temps de chargement d'emacs
+  
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config
+    (dashboard-setup-startup-hook)
+    (setq dashboard-icon-type 'all-the-icons) 
+    (setq dashboard-set-file-icons t)
+    (setq dashboard-set-init-info t)
+    )
+#+end_src
+
+Allows dashboard to be opened globally by keymap
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-& C-d") 'dashboard-open)
+#+end_src
+
+** Custom appearance
+
+#+begin_src emacs-lisp
+  (with-eval-after-load "dashboard"
+    (setq dashboard-banner-logo-title "Time to work")
+    (setq dashboard-startup-banner my/startup-banner)
+    (setq dashboard-footer-messages
+          '("En mode loque"
+            "Maitrise de la suite office (⌐□_□)"
+            "While any text editor can save your files, only Emacs can save your soul"
+            "You can download our code from the URL supplied. Good luck downloading the only postdoc who can get it to run, though"
+            "Les barreaux lasers c'est comme les cyclistes, plus c'est dopé, plus il y a de gain."
+            "When I see a bird that walks like a duck and swims like a duck and quacks like a duck, I call that bird a duck"
+            "Gaussian beam waist = lambda f / pi d"
+            "Top-hat beam waist = 1.22 lambda f / d"
+            )))
+#+end_src
+
+** Recent files
+
+Saves recently opened files every 5 minutes. Excludes the bookmarks and the recentf file itself.
+
+#+begin_src emacs-lisp
+  (run-at-time (current-time) 300 'recentf-save-list)
+  (add-to-list 'recentf-exclude my/recentf-path)
+  (add-to-list 'recentf-exclude my/bookmarks-path)
+#+end_src
+
+
+* Navigation
+
+** Ivy
+
+Ivy est un système de complétion rapide Il remplace les systèmes de complétion d'emacs. en particulier, il offre des séléctions plus facile pour les commandes M-x ou de recherche de fichier.
+
+#+begin_src emacs-lisp
+(use-package ivy
+  :diminish
+  :bind (("C-s" . swiper)
+         :map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done))
+  :config
+  (ivy-mode 1))
+#+end_src
+
+** Counsel
+
+Remplace les commandes standard emacs par des versions utilisant Ivy. En particulier effectue un filtrage dynamique des résultats et trie les résultats selon l'historique
+
+#+begin_src emacs-lisp
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+         ("C-x b" . counsel-ibuffer)
+         ("C-x C-f" . counsel-find-file)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history)))
+#+end_src
+
+** Ivy rich
+
+Donne une documentation sur les commandes M-x, affiche aussi quelques métadonnées
+
+#+begin_src emacs-lisp
+  (use-package ivy-rich
+    :init
+    (ivy-rich-mode 1))
+#+end_src
+
+Affichage des icones de fichiers dans la recherche de fichier Ivy-rich. Force l'affichage des icones en couleur
+
+#+begin_src emacs-lisp
+  (use-package all-the-icons-ivy-rich
+    :ensure t
+    :init (all-the-icons-ivy-rich-mode 1)
+    :custom
+    (setq all-the-icons-ivy-rich-icon t)
+    (setq all-the-icons-ivy-rich-color-icon t))
+#+end_src
+
+** Ivy precient
+
+Affichage des résultats souvent utilisés en premier
+
+#+begin_src emacs-lisp
+  (use-package ivy-prescient
+    :after counsel
+    :config
+    (ivy-prescient-mode 1)
+    (prescient-persist-mode 1))
+#+end_src
+
+** Helpful
+
+Remplacement des fonctions d'aides standard d'emacs par des version enrichie. Intégration avec Counsel
+
+#+begin_src emacs-lisp
+(use-package helpful
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
+#+end_src
+
+** Company
+
+Complétion dans le texte tapé. Comany precient trie les résultats selon l'usage.
+
+#+begin_src emacs-lisp
+  (use-package company
+    :config
+    (global-company-mode 1))
+
+  (use-package company-prescient
+    :after company
+    :config
+    (company-prescient-mode 1)
+    (prescient-persist-mode 1))
+#+end_src
+
+** Which key
+
+#+begin_src emacs-lisp
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 1))
+#+end_src
+
+** Dired
+
+Affichage des icones dans les explorateurs de fichier dired:
+
+#+begin_src emacs-lisp
+  (use-package all-the-icons-dired
+    :hook (dired-mode . all-the-icons-dired-mode)
+    :config
+    (setq all-the-icons-dired-monochrome nil))
+#+end_src
+
+
+* General shortcuts
+
+** Yassnippets
+
+Ajout de yas dans la pluparts des modes utilisés
+
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :hook (LaTeX-mode . yas-minor-mode)
+    (python-mode . yas-minor-mode)
+    :config
+    (setq my/yas-snippet-dirs  (expand-file-name "snippets" user-emacs-directory))
+  )
+#+end_src
+
+
+* Flycheck
+
+** Flycheck général
+
+#+begin_src emacs-lisp
+  (use-package flycheck
+  :config
+  (global-flycheck-mode)
+  (setq-default flycheck-emacs-lisp-load-path 'inherit))
+
+#+end_src
+
+** Flychek python
+
+#+begin_src emacs-lisp
+  (with-eval-after-load 'flycheck
+      (setq flycheck-flake8-maximum-line-length 79))
+
+#+end_src
+
+** Flycheck grammalecte
+
+#+begin_src emacs-lisp
+  (defun my/grammalecte-command (source)
+    (list my/python-data-path my/grammalecte-script-path source))
+
+  (with-eval-after-load 'flycheck
+    (flycheck-define-checker grammalecte
+      "A French grammar checker using Grammalecte."
+      :command ("python"
+              (eval my/grammalecte-script-path)
+              "-")
+      :standard-input t
+      :error-patterns
+      (
+       (warning line-start "<stdin>:" line ":" column "-" end-column ": warning: " (message) line-end)
+       (error   line-start "<stdin>:" line ":" column "-" end-column ": error: " (message) line-end)
+       )
+      :modes (text-mode markdown-mode LaTeX-mode org-mode))
+    (add-to-list 'flycheck-checkers 'grammalecte)
+    (flycheck-add-next-checker 'grammalecte 'tex-chktex))
+#+end_src
+ 
+** Flyspell
+
+Definition de flyspell, correcteur orthographique. Ici on se base sur Hunspell (à installer). On utilise le dictionnaire "fr" (à installer également).
+On initie également un délai, pour éviter un ralentissement du buffer suite à des analyses trop répétées.
+
+#+begin_src emacs-lisp
+  (use-package flyspell
+    :after flycheck
+    :init
+    (setq flyspell-sort-corrections nil)
+    :config
+    (setenv "LANG" "fr")
+    (setq ispell-program-name my/hunspell-path)
+    (setq ispell-dictionary "fr")
+    (setq ispell-personal-dictionary
+          (expand-file-name ".ispell" user-emacs-directory))
+    (setq flyspell-delay 1)
+    )
+#+end_src
+
+Amélioration de l'interface et utilisation de ivy pour suggestions de l'orthographe en tapant.
+
+#+begin_src emacs-lisp
+  (use-package flyspell-correct
+    :ensure  t
+    :after flyspell
+    :bind (:map flyspell-mode-map
+                ("C-;" . flyspell-correct-at-point))
+    )
+
+  (use-package flyspell-correct-ivy
+    :ensure t
+    :demand t
+    :after flyspell-correct
+    )
+
+#+end_src
+
+
+* Orgmode
+
+** Orgmode visual setup
+
+my/orgmode setup met en place toutes les options visuelles pour orgmode. En particulier, ici:
+
+- Ajoute des indentations correspondant au niveau d'orgmode
+- Change la taille de la police correspondant au niveau d'indentation orgmode
+- Effectue des retous à la ligne si le ligne dépasse la taille du buffer.
+- Augmente la taille de la police dans org
+
+#+begin_src emacs-lisp
+  (defun my/org-mode-setup ()
+    (org-indent-mode 1)
+    (variable-pitch-mode 1)
+    (visual-line-mode 1)
+    (setq visual-fill-column-width 100
+          visual-fill-column-center-text t)
+    (visual-fill-column-mode 1)
+    (text-scale-increase 2)
+    (setq org-ellipsis "▼")
+    (setq org-columns-ellipses "▼")
+    )
+
+  (use-package org-bullets
+    :after org
+    :hook (org-mode . org-bullets-mode)
+    :custom
+    (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●"))
+    )
+#+end_src
+
+** Orgmode editing setup
+
+Ajoute quelques raccourcis pour les blocks de code.
+-Empêche < de générer automatiquement un > dans les buffers emacs. Utilse pour éviter les bugs sur les <el notamment.
+
+#+begin_src emacs-lisp
+  (defun my/org-mode-editing-setup ()
+    (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+    (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+    (add-to-list 'org-structure-template-alist '("py" . "src python"))
+    (setq electric-pair-inhibit-predicate
+      (lambda (c)
+        (if (char-equal c ?\<) t (electric-pair-default-inhibit c))))
+  )
+
+#+end_src
+
+** Orgmode Agenda setup
+
+Met en forme l'agenda d'orgmode.
+
+- Retire l'affichage des tags "Scheduled" sur toutes les taches planifiées
+- Retire les préfixes des taches
+- Selection des séquences possibles sur la planification des tâches (todo, done, planned, active)...
+- Affiche la date de complétion des taches lors du passe à l'état "Done"
+- Setup des tags possibles aux taches par C-c +lettre
+- Localisation des tags à droite de l'agenda
+- Alignement des tags dans l'agenda
+- Redimmesionnement des buffers temporaires (à voir pour l'utilité ?)
+- Setup des taches archivées dans le sous-dossier .emacs-backups
+- Empêche les fichiers agenda d'apparaître dans recentf (évite de polluer la liste des fichiers récents avec tous les fichiers d'emacs). 
+
+#+begin_src emacs-lisp
+  (defun my/org-mode-agenda-setup ()
+
+    (setq org-agenda-hide-tags-regexp "Scheduled")
+    (setq org-agenda-scheduled-leaders '("" ""))
+    (setq org-agenda-include-diary t)
+    (setq calendar-dat-style 'european)
+    (setq diary-show-holidays-flag nil)
+    (setq org-todo-keywords
+	  '((sequence "TODO(t)" "|" "DONE(d)")
+	    (sequence "PLAN(p)" "ACTIVE(a)" "|" "Done(d)")))
+
+    (setq org-log-done t)
+
+    (setq org-tag-alist
+	  '(("@Me" . ?r)
+	    ("@BEE" . ?e)
+	    ("@BEM" . ?m)
+	    ("@Indus" . ?i)
+	    ("@RGP" . ?g)
+	    ("@Achats" . ?a)
+	    ("@Direction" . ?d))
+	  )
+
+    (setq org-agenda-tags-column -100)
+    (setq org-agenda-align-tags t)
+
+    (temp-buffer-resize-mode 1)
+    (setq temp-buffer-max-height 30)
+
+    (setq org-archive-location ".emacs-backups/archives.org::")
+      )
+#+end_src
+
+Definition d'une fonction qui archive toutes les sous-tâches marquée "DONE" du subtree considéré
+
+#+begin_src emacs-lisp
+  (defun org-archive-done-tasks ()
+    (interactive)
+    (org-map-entries
+     (lambda ()
+       (org-archive-subtree)
+       (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
+     "/DONE" 'tree)
+    )
+#+end_src
+
+** Auto-tangle Configuration files
+
+first function checks if this buffer fiile name is equal to the assumed location of the buffer. If yes, then disable tangle confirmation and then tangles the file to destination file (in header).
+
+Second block hooks the function to saving command. Every time this file will be saved, all emacs block will be tangled to the destination file. =)
+
+#+begin_src emacs-lisp
+  (defun my/org-babel-tangle-config ()
+    (when (string-equal (buffer-file-name)
+                        (expand-file-name "~/.emacs.d/emacs.org"))
+      (let ((org-confirm-babel-evaluate nil))
+        (org-babel-tangle))))
+#+end_src
+
+** Installation org package
+
+#+begin_src emacs-lisp
+(use-package org
+  :pin org
+  :commands (org-capture org-agenda)
+  :hook (
+  (org-mode . my/org-mode-setup)
+  (org-mode . my/org-mode-agenda-setup)
+  (org-mode . my/org-mode-editing-setup)
+  )
+  :config
+  (define-key global-map "\C-cc" 'org-archive-done-tasks)
+  (require 'org-tempo)
+  (add-hook 'org-mode-hook
+  (lambda ()
+  (add-hook 'after-save-hook #'my/org-babel-tangle-config)))
+)
+
+(define-key global-map "\C-ca" 'org-agenda)
+#+end_src
+
+
+* Magit
+
+Charge le paquet magit. Le paquet est chargé à la demande. Il n'ouvre qu'un seul buffer. L'executable de git est défini dans les variables locales
+
+#+begin_src emacs-lisp
+  (use-package magit
+    :commands (magit-status)
+    :custom
+    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+    (setq magit-git-executable my/magit-git-executable))
+#+end_src
+
+
+* Latex
+
+** Tex file opening
+
+- Tex-auto-save enregistre automatiquement les informations de parsing latex (par exembles, labels...)
+- Tex-parse-self analyse la structure à l'ouverture d'un document latex
+- Tex-master-ask nil interdit de demander le fichier maitre lors de la compilation.
+- Tex-save-query-nil ne demande pas pour sauvegarder avant une compilation
+  
+#+begin_src emacs-lisp
+  (defun my/latex-config ()
+    (setq TeX-auto-save t)
+    (setq TeX-parse-self t)
+    (setq TeX-save-query nil) 
+    (setq-default TeX-master t))
+#+end_src
+
+** Tex mode hooks
+
+Après le lancement d'un fichier latex, le bloc suivant est évalué:
+
+- Ajout de plusieurs modes utiles sous latex (visual line mode effetue des retours à la ligne sur les longues lignes)
+- Latex-math-mode active le mode d'écriture mathématique d'auctex. En particulier les raccourcis de symboles mathématiques
+- Yas mode permet l'utilisation des snippets dans latex
+- Turn on reftex facilite la gestion des références (label, ref, cite...)
+  
+#+begin_src emacs-lisp
+  (defun my/latex-setup ()
+    (visual-line-mode)
+    (LaTeX-math-mode)
+    (flyspell-mode))
+#+end_src
+
+** Tex Compilation
+
+- Force la compilation en pdf (au lieu de dvi)
+- Utilisation du package pdf tools
+- Synchronisation entre le pdf et le code latex
+- Affichage automatique du pdf après compilation
+  
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+        :init
+        (setq pdf-cache-prefetch-delay -1)
+        :config
+        (pdf-tools-install))
+
+  (defun my/latex-compilation-parameters ()
+  (setq TeX-PDF-mode t
+        TeX-view-program-selection '((output-pdf "PDF Tools"))
+        TeX-source-correlate-start-server t)
+  (add-hook 'TeX-after-compilation-finished-functions
+            (lambda (_process) (TeX-view))
+            nil t))
+#+end_src
+
+** Tex editing behaviour
+
+- Remplace le raccourci pour symbole mathématique par &,
+- Défini un racourci pour le symbole de dérivée partielle.
+- Ajoute automatiquement des brackets lors de l'insersion d'un sub ou sup script
+  
+#+begin_src emacs-lisp
+    (defun my/latex-editing-parameters ()
+      (setq LaTeX-math-abbrev-prefix "&")
+      (add-to-list 'LaTeX-math-list '(
+                                      ("M-p" "partial" "" 2202)
+                                      ("M-r" "overrightarrow" "" nil)
+                                      ("M-:" "frac" "" nil)
+                                      ("M-c" "text{c.c.}" "" nil)
+                                      ("M-." "dot" "" 15)
+                                      ("SPC" "&" "" nil)))
+      (setq TeX-electric-sub-and-superscript t)
+      (setq LaTeX-electric-left-right-brace t)
+      (setq TeX-electric-math '("$" . "$")))
+#+end_src
+
+** Tex flycheck customisation
+
+Suppression de company capf dans les buffers latex qui interférent avec lsp
+
+#+begin_src emacs-lisp
+  (defun my/latex-flycheck-parameters ()
+    (setq flycheck-chktexrc "~/.chktexrc")
+    (setq reftex-plug-into-AUCTeX t))
+
+  (defun my/latex-disable-company-capf ()
+      "Remove company-capf backend in LaTeX buffers."
+      (setq-local company-backends
+                  (remove 'company-capf company-backends)))
+#+end_src
+
+** Tex custom insersion function
+
+*** Unités et préfixes
+
+#+begin_src emacs-lisp
+      (defvar my/si-tokens
+        '((""  . "")
+          ("Yotta" . "\\yotta")
+          ("Zetta" . "\\zetta")
+          ("Exa" . "\\exa")
+          ("Peta" . "\\peta")
+          ("Tera" . "\\tera")
+          ("Giga" . "\\giga")
+          ("Mega" . "\\mega")
+          ("kilo" . "\\kilo")
+          ("hecto" . "\\hecto")
+          ("deca" . "\\deca")
+          ("deci" . "\\deci")
+          ("centi" . "\\centi")
+          ("milli" . "\\milli")
+          ("µ micro" . "\\micro")
+          ("nano" . "\\nano")
+          ("pico" . "\\pico")
+          ("femto" . "\\femto")
+          ("atto" . "\\atto")
+          ("zepto" . "\\zepto")
+          ("yocto" . "\\yocto")
+          ("per" . "\\per")
+          ("meter"   . "\\meter")
+          ("gram"   . "\\gram")
+          ("second"   . "\\second")
+          ("Ampere"   . "\\ampere")
+          ("Kelvin"   . "\\kelvin")
+          ("mole" . "\\mole")
+          ("Candela"  . "\\candela")
+          ("Hertz"  . "\\hertz")
+          ("Newton"   . "\\newton")
+          ("Pascal"  . "\\pascal")
+          ("Joule"   . "\\joule")
+          ("Watt"   . "\\watt")
+          ("Coulomb"   . "\\coulomb")
+          ("Volt"   . "\\volt")
+          ("Farad"   . "\\farad")
+          ("Ω ohm"   . "\\ohm")
+          ("Siemens"   . "\\siemens")
+          ("Weber"  . "\\weber")
+          ("Telsa"   . "\\tesla")
+          ("Henry"   . "\\henry")
+          ("lumen"  . "\\lumen")
+          ("lux"  . "\\lux")
+          ("Becquerel"  . "\\becquerel")
+          ("Gray"  . "\\gray")
+          ("Sievert"  . "\\sievert")
+          ("katal" . "\\katal")
+          ("² squared" . "^2")
+          ("inv" . "^{-1}")))
+#+end_src
+
+Easy insersion of values with units in text
+#+begin_src emacs-lisp
+  (defun my/latex-insert-SI ()
+    (interactive)
+    (let ((value (read-string "Value: "))
+          key token tokens)
+
+      (while
+          (not
+           (string-empty-p
+            (setq key
+                  (completing-read
+                   "Token (RET to finish): "
+                   (mapcar #'car my/si-tokens)
+                   nil nil nil nil ""))))
+
+        (setq token (cdr (assoc key my/si-tokens)))
+        (when token
+          (push token tokens)))
+
+      (insert
+       (format "\\SI{%s}{%s}"
+               value
+               (mapconcat #'identity (reverse tokens) "")))))
+#+end_src
+
+Easy insersion of figures in a latex file. Prompts for file path to insert in latex file as well as the image width. Creates the corresponding \includegraphics command
+
+#+begin_src emacs-lisp
+  (defun Latex-include-graphics (width filename)
+    "Prompts for figure width and figure path and include image at path with width = width * linewidth"
+    (interactive "sWidth: \nfInsert file name: ")
+    (insert "\\includegraphics[width="width"\\linewidth]{"(file-relative-name filename)"}"))
+#+end_src
+
+** Lsp-latex
+
+Eglot configuration
+#+begin_src emacs-lisp
+  (use-package eglot
+    :after latex
+    :hook (
+           (LaTeX-mode . (lambda ()
+                           (setq eglot-server-programs `((latex-mode . ("texlab"))))
+                           (eglot-ensure))))
+     :config
+     (setq eglot-connect-timeout 10)
+     (setq eglot-autoshutdown t)
+     (define-key LaTeX-mode-map (kbd "C-c l r r") #'eglot-rename)
+     (define-key LaTeX-mode-map (kbd "C-c l = =") #'eglot-format-buffer)
+     )
+
+#+end_src
+
+** New latex folder generation
+
+La fonction Create-new-LaTeX-document créer un clone d'un template latex existant et la copie au point souhaité.
+
+#+begin_src emacs-lisp
+  (defun Create-new-LaTeX-document (destination)
+    "Copie récursivement le contenu d'un dossier source fixe vers DESTINATION."
+    (interactive
+     (list (read-directory-name "Coller le contenu du dossier fixe ici : ")))
+    (let ((source my/latex-template-path))
+      (unless (file-directory-p source)
+        (error "Le dossier source n'existe pas ou n'est pas un répertoire"))
+      (unless (file-directory-p destination)
+        (make-directory destination t))
+      (dolist (file (directory-files source t "^[^.]")) ; ignore . et ..
+        (let ((target (expand-file-name (file-name-nondirectory file) destination)))
+          (if (file-directory-p file)
+              (copy-directory file target)
+            (copy-file file target t))))
+      (message "Copie terminée vers %s" destination)))
+#+end_src
+
+** Basic launch
+
+#+begin_src emacs-lisp
+  (use-package tex
+    :ensure auctex
+    :mode ("\\.tex\\'" . LaTeX-mode)
+    :hook ((LaTeX-mode . my/latex-config)
+	   (LaTeX-mode . my/latex-setup)
+	   (LaTeX-mode . my/latex-compilation-parameters)
+	   (LaTeX-mode . my/latex-editing-parameters)
+	   (LaTeX-mode . my/latex-flycheck-parameters)
+	   (LaTeX-mode . my/latex-disable-company-capf))
+    :config
+    (with-eval-after-load 'latex
+      (define-key LaTeX-mode-map (kbd "C-c u") #'my/latex-insert-SI)
+      (define-key LaTeX-mode-map (kbd "C-c i") #'Latex-include-graphics)))
+#+end_src
+
+
+* Python
+
+** Shell interpreters
+
+#+begin_src emacs-lisp
+  (setq python-shell-interpreter "python"
+        python-shell-interpreter-args "-i")
+#+end_src
+
+** Lancement script
+
+Envoie le buffer python dans un eshell avec C-c C-c
+
+#+begin_src emacs-lisp
+(defun my/run-python-buffer-in-process ()
+  "Exécute le buffer Python dans un processus en arrière-plan et affiche
+la sortie (y compris les erreurs) dans *Messages*.  
+Si le buffer n'est pas sauvegardé, demande de le sauvegarder avant l'exécution."
+  (interactive)
+  (when (or (not (buffer-file-name))
+            (buffer-modified-p))
+    (if (y-or-n-p "Le buffer n'est pas sauvegardé. Sauvegarder maintenant ? ")
+        (save-buffer)
+      (error "Le buffer doit être sauvegardé pour exécuter le script")))
+  (let ((file (buffer-file-name)))
+    (let ((output-buffer (get-buffer-create "*python-output-temp*")))
+      (with-current-buffer output-buffer
+        (erase-buffer))
+      (let ((proc (start-process "python-process"
+                                 output-buffer
+                                 "python"
+                                 "-u"
+                                 file)))
+        (set-process-filter
+         proc
+         (lambda (process string)
+           (with-current-buffer (process-buffer process)
+             (goto-char (point-max))
+             (insert string))))
+        (set-process-sentinel
+         proc
+         (lambda (process event)
+           (when (memq (process-status process) '(exit signal))
+             (let ((output (with-current-buffer (process-buffer process)
+                             (buffer-string))))
+               (message "%s" output)))))))))
+        #+end_src
+
+** Custom function definition
+
+*** Initialisation script
+
+Prompts for documentation, import basic packages
+
+#+begin_src emacs-lisp
+  (defun my/python-init-script (doc)
+    "Insert the script documentation, import typical packages and writes the main fun"
+    (interactive "sDocumentation: ")
+    (insert "\"\"\" "doc"
+  Author: Raphaël Humblot
+  Date:")
+        (insert (format-time-string "%Y-%m-%d %H:%M:%S"))
+        (insert "\"\"\"
+
+  from pathlib import Path
+  import numpy as np
+  import numpy.typing as npt
+  import matplotlib.pyplot as plt
+
+
+  def main():
+      \"\"\""doc"\"\"\"
+
+
+  if __name__ == \"__main__\":
+      main()
+  "
+      ))
+#+end_src
+
+*** Path management
+
+Prompts for a file through ivy to insert relative path using Path object
+
+#+begin_src emacs-lisp
+  (defun my/python-insert-path-to-file (filename)
+    "Insert a relative path from current python file to target file. Useful for data import"
+    (interactive "fFile: ")
+    (insert "Path(__file__).parent " "/ " (mapconcat
+                                            (lambda (s) (format "\"%s\"" s))
+                                            (split-string (file-relative-name filename) "/")
+                                            " / ")
+            ))
+#+end_src
+
+*** Figure saving
+
+Prompts for a name and inserts a command for figure saving with name <name> in file parent directory folder. Uses standard figure saving options
+
+#+begin_src emacs-lisp
+  (defun my/python-insert-figure-save (name)
+    "Insert fig.savefig command"
+    (interactive "sFigure name: ")
+    (insert "fig.savefig(Path(__file__).parent / \""name".png\", dpi=400, bbox_inches=\"tight\")"))
+#+end_src
+
+*** Formatting buffer
+
+#+begin_src emacs-lisp
+  (defun my/black-format-current-buffer ()
+    "Format current buffer with black."
+    (interactive)
+    (when buffer-file-name
+      (shell-command (concat "black -q -l 79 \"" buffer-file-name "\""))
+      (revert-buffer t t )))
+#+end_src
+
+*** Key mapping
+
+#+begin_src emacs-lisp
+  (defun my/python-set-keymaps ()
+    (define-key python-mode-map (kbd "C-c M-m") 'my/python-init-script)
+    (define-key python-mode-map (kbd "C-c f") 'my/python-insert-path-to-file)
+    (define-key python-mode-map (kbd "C-c M-f") 'my/python-insert-figure-save)
+    (define-key python-mode-map (kbd "C-<backspace>") 'backward-kill-word)
+    (define-key python-mode-map (kbd "C-c l b") #'my/black-format-current-buffer)
+    (define-key python-mode-map (kbd "C-c C-c") #'my/run-python-buffer-in-process)
+    )
+#+end_src
+
+** Lsp-mode 
+
+*** Paramètrage
+
+- Setup de C-c l comme commande de controle lsp standard
+- Autorisation de plusieurs projets dans une seule session lsp
+- Utilisation de seveur local sur lsp uniquement
+- Utilisation de flycheck plutôt que flymake comme backend. Permet une meilleure configuration et d'enchainer plusieurs checkers
+- Désactive la journalisation des échanges sur lsp. Accélère le temps de réponse typique
+- Chargement de pyright uniquement pour réduire le loadtime
+- Interdit l'utilisation du multi-root. Evite à Lsp de confondre les variables si deux projets python sont ouverts simultanément.
+- autorise LsP à deviner la racine du projet (utile dans mon cas sur des petits fichiers. Utiliser projectile dans le cas de gros projets.)
+
+#+begin_src emacs-lisp
+  (defun my/lsp-setup ()
+    (setq lsp-keymap-prefix "C-c l")
+    (setq lsp-enable-multi-root t)
+    (setq lsp-allow-server-download nil)
+    (setq lsp-prefer-flymake nil)
+    (setq lsp-log-io nil)
+    (setq lsp-client-packages '(lsp-pyright))
+    (setq lsp-pyright-multi-root nil)
+    (setq lsp-auto-guess-root t)
+    (setq lsp-enable-file-watchers nil)
+    (setq lsp-pyright-python-executable-cmd "python")
+    (setq lsp-enable-which-key-integration 1)
+    )
+#+end_src
+
+*** Localisation du serveur
+
+De nombreux problèmes sont rencontrés sous windows suite à la différence des chemins par rapport à Linux. Pour bypass ce problème, on écrit le nom des fichiers en dur dans le fichier \.emacs.d\lsp-session et lsp va venir lire ce fichier pour trouver le chemin du fichier actif.
+
+#+begin_src emacs-lisp
+  (defun my/lsp-session-localisation ()
+    (setq lsp-session-file (expand-file-name "lsp-session" user-emacs-directory))
+    )
+#+end_src
+
+*** Installation
+
+Lsp mode comme éditeur de python. 
+
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :hook ((python-mode . lsp-deferred))
+    :commands lsp
+    :init
+    (my/lsp-setup)
+    (my/lsp-session-localisation)
+    )
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package lsp-pyright
+    :after lsp-mode
+    :config
+    (setq lsp-disabled-clients '(pyls))
+    )
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package lsp-ui
+    :after lsp-mode
+    :hook (lsp-mode . lsp-ui-mode))
+#+end_src
+
+** Python installation
+
+*** Paramètrage
+
+#+begin_src emacs-lisp
+  (defun my/python-setup ()
+  (electric-pair-mode 1))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package python
+    :hook ((python-mode . my/python-set-keymaps)
+            (python-mode . my/python-setup)
+    )
+#+End_src
+
+
+* Projectile
+
+#+begin_src emacs-lisp
+  (defun my/projectile-setup ()
+    (setq projectile-completion-system 'ivy)
+    (setq projectile-enable-caching t)
+    (setq projectile-globally-ignored-files
+          (append '(".aux"
+                    "bbl"
+                    "blg"
+                    "~")
+                  projectile-globally-ignored-files))
+    (setq projectile-globally-ignored-directories (append '("*.emacs-backups*")
+                  projectile-globally-ignored-directories))
+    (if (file-directory-p "u:/Travaux")
+        (setq projectile-project-search-path
+              (append '("u:/Travaux/Projets") projectile-project-search-path)))
+    )
+#+end_src
+
+#+begin_src emacs-lisp
+
+  (use-package projectile
+  :diminish projectile-mode
+  :commands (projectile-find-file projectile-switch-project)
+  :bind-keymap ("C-c p" . projectile-command-map)
+  :hook (projectile-mode . my/projectile-setup)
+  :config (projectile-mode)
+  (message "Projectile loaded !"))
+
+  (use-package counsel-projectile
+    :hook projectile-mode-hook
+    :config (counsel-projectile-mode))
+
+#+end_src
+
+
+* Makefiles editing
+
+#+begin_src emacs-lisp
+  (defun add-dependency (file bool curr-point)
+    "Insert dependencies to file and insert creation command"
+    (interactive
+     (list
+      (read-file-name "*fInsert file name: \nP")
+      (y-or-n-p "Insert dependecies? ")
+      (point)))
+    (insert (file-relative-name file))
+    (if bool (save-excursion
+               (end-of-buffer)
+               (insert "\n\n")
+               (insert (file-relative-name file))
+
+
+               (defun suppress-messages (func &rest args)
+                 "Suppress message output from FUNC."
+                 ;; Some packages are too noisy.
+                 ;; https://superuser.com/questions/669701/emacs-disable-some-minibuffer-messages
+                 (cl-flet ((silence (&rest args1) (ignore)))
+                   (advice-add 'message :around #'silence)
+                   (unwind-protect
+                       (apply func args)
+                     (advice-remove 'message #'silence))))
+
+               ;; Suppress "Cleaning up the recentf...done (0 removed)"
+               (advice-add 'recentf-cleanup :around #'suppress-messages)(insert " : "))))
+
+  (defun add-add-dependency ()
+    (local-set-key (kbd "C-c C-d") 'add-dependency))
+
+(add-hook 'makefile-mode-hook #'add-add-dependency)
+#+end_src
+
+
+* Checker
+
+#+begin_src emacs-lisp
+(message "Emacs init buffer evaluated to the end !")
+#+end_src

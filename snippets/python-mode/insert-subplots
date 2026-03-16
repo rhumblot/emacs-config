@@ -1,7 +1,15 @@
 # -*- mode: snippet -*-
 # name: insert-subplots
-# key: fig
+# key: <fig
 # --
 
 fig, ax = plt.subplots()
-ax: plt.Axes
+
+ax.plot(${1:x},
+	${2:y},
+	$0)
+
+ax.set_xlabel("${3:xlabel}")
+ax.set_ylabel("${4:ylabel}")
+ax.grid(kind="both")
+ax.legend()
