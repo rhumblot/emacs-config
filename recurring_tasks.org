@@ -1,4 +1,10 @@
 * Tasks
+** TODO Donner attestation passe navigo au service paie
+SCHEDULED: <2026-12-08 mar. +1y>
+:PROPERTIES:
+:LAST_REPEAT: [2026-01-08 jeu. 09:24]
+:END:
+- State "DONE"       from "TODO"       [2026-01-08 jeu. 09:24]
 ** TODO Faire imputation heure                                         :@Me:
 SCHEDULED: <2026-04-15 mer. +1m>
 :PROPERTIES:
@@ -16,7 +22,7 @@ SCHEDULED: <2026-04-15 mer. +1m>
 - State "DONE"       from "TODO"       [2025-06-16 lun. 09:08]
 - State "DONE"       from "TODO"       [2025-05-15 jeu. 17:19]
 - State "DONE"       from "TODO"       [2025-04-14 lun. 09:25]
-** TODO Faire imputation heures
+** TODO Faire imputation heures                                        :@Me:
 SCHEDULED: <2026-03-25 mer. +1m>
 :PROPERTIES:
 :LAST_REPEAT: [2026-02-25 mer. 09:24]

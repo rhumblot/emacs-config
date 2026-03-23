@@ -8,6 +8,7 @@
 (setq my/magit-git-executable "C:\\Program Files\\Git\\mingw64\\bin\\git.exe")
 (setq my/latex-template-path "u:/Autres/Template/Document_latex/")
 (setq my/hunspell-path "C:/msys64/mingw64/bin/hunspell.exe")
+(setq temporary-file-directory "~/.temp/")
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (load custom-file 'noerror)
 
@@ -38,7 +39,7 @@
 (define-key global-map "\M-n" 'forward-paragraph)
 (define-key global-map "\M-p" 'backward-paragraph)
 
-(global-auto-revert-mode)
+(global-auto-revert-mode t)
 
 (let ((dir ".emacs-backups"))
   (setq auto-save-file-name-transforms `(("\\([^/]*/\\)*\\([^/]*\\)\\'" ,(concat dir "/\\2")))
@@ -88,6 +89,21 @@
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode -1))))
 
+(defface my-strong-bold-face
+  '((t (:weight extra-bold :foreground "white")))
+  "test doc")
+
+(defun bold-first-two-letters-buffer ()
+  "Met en évidence les deux premières lettres de chaque mot."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "\\b\\w\\{2\\}" nil t)
+      (add-text-properties
+       (match-beginning 0)
+       (match-end 0)
+       '(face my-strong-bold-face)))))
+
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1))
@@ -127,6 +143,10 @@
 (run-at-time (current-time) 300 'recentf-save-list)
 (add-to-list 'recentf-exclude my/recentf-path)
 (add-to-list 'recentf-exclude my/bookmarks-path)
+(with-eval-after-load 'org
+  (when (boundp 'org-agenda-files)
+    (dolist (f org-agenda-files)
+      (add-to-list 'recentf-exclude f))))
 
 (use-package ivy
   :diminish
@@ -270,14 +290,28 @@
   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●"))
   )
 
+(defun my/org-create-latex-snippet ()
+  (interactive)
+  (insert "$$$$")
+  (backward-char 2)
+  (org-edit-special))
+
 (defun my/org-mode-editing-setup ()
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
   (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("la" . "src latex"))
+  (add-to-list 'org-src-lang-modes '("latex" . latex))
+  (setq org-latex-create-formula-image-program 'dvipng)
+  (setq org-preview-latex-default-process 'dvipng)
+  (setq org-startup-with-latex-preview t)
+  (setq org-fromat-latex-options
+        (plist-put org-format-latex-options :scale 2.0))
+  (setq org-src-window-setup 'current-window)    
   (setq electric-pair-inhibit-predicate
-    (lambda (c)
-      (if (char-equal c ?\<) t (electric-pair-default-inhibit c))))
-)
+        (lambda (c)
+          (if (char-equal c ?\<) t (electric-pair-default-inhibit c))))
+  )
 
 (defun my/org-mode-agenda-setup ()
 
@@ -287,20 +321,23 @@
   (setq calendar-dat-style 'european)
   (setq diary-show-holidays-flag nil)
   (setq org-todo-keywords
-	'((sequence "TODO(t)" "|" "DONE(d)")
-	  (sequence "PLAN(p)" "ACTIVE(a)" "|" "Done(d)")))
+        '((sequence "TODO(t)" "|" "DONE(d)")
+          (sequence "PLAN(p)" "ACTIVE(a)" "|" "Done(d)")))
 
   (setq org-log-done t)
-
+  (setq org-agenda-skip-scheduled-if-done t)
+  (setq org-log-done 'time)
+  (setq org-agenda-start-with-log-mode t)
+  (setq org-agenda-log-mode-items '(closed))
   (setq org-tag-alist
-	'(("@Me" . ?r)
-	  ("@BEE" . ?e)
-	  ("@BEM" . ?m)
-	  ("@Indus" . ?i)
-	  ("@RGP" . ?g)
-	  ("@Achats" . ?a)
-	  ("@Direction" . ?d))
-	)
+        '(("@Me" . ?r)
+          ("@BEE" . ?e)
+          ("@BEM" . ?m)
+          ("@Indus" . ?i)
+          ("@RGP" . ?g)
+          ("@Achats" . ?a)
+          ("@Direction" . ?d))
+        )
 
   (setq org-agenda-tags-column -100)
   (setq org-agenda-align-tags t)
@@ -330,17 +367,17 @@
   :pin org
   :commands (org-capture org-agenda)
   :hook (
-  (org-mode . my/org-mode-setup)
-  (org-mode . my/org-mode-agenda-setup)
-  (org-mode . my/org-mode-editing-setup)
-  )
+         (org-mode . my/org-mode-setup)
+         (org-mode . my/org-mode-agenda-setup)
+         (org-mode . my/org-mode-editing-setup))
   :config
   (define-key global-map "\C-cc" 'org-archive-done-tasks)
+  (define-key org-mode-map (kbd "C-c l") #'my/org-create-latex-snippet)
   (require 'org-tempo)
   (add-hook 'org-mode-hook
-  (lambda ()
-  (add-hook 'after-save-hook #'my/org-babel-tangle-config)))
-)
+            (lambda ()
+              (add-hook 'after-save-hook #'my/org-babel-tangle-config)))
+  )
 
 (define-key global-map "\C-ca" 'org-agenda)
 
@@ -376,14 +413,13 @@
           nil t))
 
 (defun my/latex-editing-parameters ()
+  (add-to-list 'LaTeX-math-list '("M-p" "partial" "" 2202))
+  (add-to-list 'LaTeX-math-list '("M-r" "overrightarrow" "" nil))
+  (add-to-list 'LaTeX-math-list '("M-:" "frac" "" nil))
+  (add-to-list 'LaTeX-math-list '("M-c" "text{c.c.}" "" nil))
+  (add-to-list 'LaTeX-math-list '("M-." "dot" "" 15))
+  (add-to-list 'LaTeX-math-list '(" " "&" "" nil))
   (setq LaTeX-math-abbrev-prefix "&")
-  (add-to-list 'LaTeX-math-list '(
-                                  ("M-p" "partial" "" 2202)
-                                  ("M-r" "overrightarrow" "" nil)
-                                  ("M-:" "frac" "" nil)
-                                  ("M-c" "text{c.c.}" "" nil)
-                                  ("M-." "dot" "" 15)
-                                  ("SPC" "&" "" nil)))
   (setq TeX-electric-sub-and-superscript t)
   (setq LaTeX-electric-left-right-brace t)
   (setq TeX-electric-math '("$" . "$")))
@@ -510,15 +546,17 @@
   :ensure auctex
   :mode ("\\.tex\\'" . LaTeX-mode)
   :hook ((LaTeX-mode . my/latex-config)
-	 (LaTeX-mode . my/latex-setup)
-	 (LaTeX-mode . my/latex-compilation-parameters)
-	 (LaTeX-mode . my/latex-editing-parameters)
-	 (LaTeX-mode . my/latex-flycheck-parameters)
-	 (LaTeX-mode . my/latex-disable-company-capf))
+         (LaTeX-mode . my/latex-setup)
+         (LaTeX-mode . my/latex-compilation-parameters)
+         (LaTeX-mode . my/latex-editing-parameters)
+         (LaTeX-mode . my/latex-flycheck-parameters)
+         (LaTeX-mode . my/latex-disable-company-capf)
+         (LaTeX-mode . LaTeX-math-mode))
   :config
   (with-eval-after-load 'latex
     (define-key LaTeX-mode-map (kbd "C-c u") #'my/latex-insert-SI)
-    (define-key LaTeX-mode-map (kbd "C-c i") #'Latex-include-graphics)))
+    (define-key LaTeX-mode-map (kbd "C-c i") #'Latex-include-graphics))
+  )
 
 (setq python-shell-interpreter "python"
       python-shell-interpreter-args "-i")
@@ -556,19 +594,61 @@ Si le buffer n'est pas sauvegardé, demande de le sauvegarder avant l'exécution
                              (buffer-string))))
                (message "%s" output)))))))))
 
+(defun my/debug-python-buffer ()
+  "Lance pdb sur le buffer Python courant dans l'autre fenêtre.
+Si l'écran est déjà split, utilise l'autre fenêtre. Sinon, crée un split horizontal.
+Le point est placé dans le buffer debugger."
+  (interactive)
+  (unless (buffer-file-name)
+    (error "Le buffer doit être sauvegardé sur disque avant de lancer pdb"))
+  (when (buffer-modified-p)
+    (if (y-or-n-p "Buffer modifié. Sauvegarder ? ")
+        (save-buffer)
+      (error "Le buffer doit être sauvegardé pour lancer pdb")))
+  (let* ((orig-file (buffer-file-name))
+         (cur-window (selected-window))
+         (other-win (if (> (length (window-list)) 1)
+                        (seq-find (lambda (w) (not (eq w cur-window)))
+                                  (window-list))
+                      (split-window-right)))
+         dbg-buffer)
+    (select-window other-win)
+    (setq dbg-buffer (realgud:pdb (concat "python -m pdb \"" orig-file "\"")))
+    (switch-to-buffer dbg-buffer)
+    (select-window other-win)))
+
+(defun my/realgud-kill ()
+  "Supprime le processus associé au buffer realgud courant lors de la fermeture du buffer."
+  (add-hook 'kill-buffer-hook
+            (lambda ()
+              (let ((proc (get-buffer-process (current-buffer))))
+                (when (and proc (process-live-p proc))
+                  (delete-process proc))))
+            nil t))
+
+(use-package realgud
+  :defer t
+  :commands (realgud:pdb)
+  :hook (realgud:track-mode . my/realgud-kill)
+  :config
+  (setq realgud:shortkey-mode nil)
+  (setq realgud:frame-arrow-type 'left)
+  )
+
 (defun my/python-init-script (doc)
   "Insert the script documentation, import typical packages and writes the main fun"
   (interactive "sDocumentation: ")
   (insert "\"\"\" "doc"
 Author: Raphaël Humblot
 Date:")
-      (insert (format-time-string "%Y-%m-%d %H:%M:%S"))
-      (insert "\"\"\"
-
+    (insert (format-time-string "%Y-%m-%d %H:%M:%S"))
+    (insert "\"\"\"
 from pathlib import Path
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 
 def main():
@@ -578,7 +658,7 @@ def main():
 if __name__ == \"__main__\":
     main()
 "
-    ))
+        ))
 
 (defun my/python-insert-path-to-file (filename)
   "Insert a relative path from current python file to target file. Useful for data import"
@@ -608,6 +688,7 @@ if __name__ == \"__main__\":
   (define-key python-mode-map (kbd "C-<backspace>") 'backward-kill-word)
   (define-key python-mode-map (kbd "C-c l b") #'my/black-format-current-buffer)
   (define-key python-mode-map (kbd "C-c C-c") #'my/run-python-buffer-in-process)
+  (define-key python-mode-map (kbd "C-c d") #'my/debug-python-buffer)
   )
 
 (defun my/lsp-setup ()
@@ -651,7 +732,7 @@ if __name__ == \"__main__\":
 
 (use-package python
   :hook ((python-mode . my/python-set-keymaps)
-          (python-mode . my/python-setup)
+          (python-mode . my/python-setup))
   )
 
 (defun my/projectile-setup ()

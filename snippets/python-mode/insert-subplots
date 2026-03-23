@@ -11,5 +11,5 @@ ax.plot(${1:x},
 
 ax.set_xlabel("${3:xlabel}")
 ax.set_ylabel("${4:ylabel}")
-ax.grid(kind="both")
+ax.grid(which="both")
 ax.legend()
