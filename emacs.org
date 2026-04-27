@@ -3,6 +3,8 @@
 * Tasks
 ** DONE Trouver moyen d'afficher les preview latex dans org
 CLOSED: [2026-03-18 mer. 09:27] SCHEDULED: <2026-03-18 mer.>
+** DONE Mettre un pompt pour sauvegarder fichier avant black 
+CLOSED: [2026-04-23 jeu. 14:03] SCHEDULED: <2026-04-23 jeu.>
 
 * Variables locales:
 
@@ -89,6 +91,99 @@ Revert buffer automatiquement
 #+begin_src emacs-lisp
 (global-auto-revert-mode t)
 #+end_src
+
+Eviter le scan bidirectionnel (acceleation des performances pour langues usuelles)
+
+#+begin_src emacs-lisp
+(setq-default bidi-display-reordering 'left-to-right
+              bidi-paragraph-direction 'left-to-right)
+(setq bidi-inhibit-bpa t)
+#+end_src
+
+Attendre l'arrêt de la frappe pour la mise en forme
+
+#+begin_src emacs-lisp
+(setq redisplay-skip-fontification-on-input t)
+#+end_src
+
+Efface les curseurs dans les buffers non actifs
+
+#+begin_src emacs-lisp
+(setq-default cursor-in-non-selected-windows nil)
+(setq highlight-nonselected-windows nil)
+#+end_src
+
+** Kill ring
+
+Evite l'effacement des copiés externes à
+
+#+begin_src emacs-lisp
+(setq save-interprogram-paste-before-kill t)
+#+end_src
+
+Evite les duplicates dans le kill ring:
+
+#+begin_src emacs-lisp
+(setq kill-do-not-save-duplicates t)
+#+end_src
+
+balancing the size of split windows
+
+#+begin_src emacs-lisp
+(setq window-combination-resize t)
+#+end_src
+
+Make C-x 1 reversilble
+
+#+begin_src emacs-lisp
+(winner-mode +1)
+
+(defun toggle-delete-other-windows ()
+  "Delete other windows in frame if any, or restore previous window config."
+  (interactive)
+  (if (and winner-mode
+           (equal (selected-window) (next-window)))
+      (winner-undo)
+    (delete-other-windows)))
+
+(global-set-key (kbd "C-x 1") #'toggle-delete-other-windows)
+#+end_src
+
+Restoring previous position is doable with C-u C-SPC. continue pressing C-SPC after the first to pop even more
+
+#+begin_src emacs-lisp
+(setq set-mark-command-repeat-pop t)
+#+end_src
+
+Opens buffer in previous position.
+
+#+begin_src emacs-lisp
+  (use-package savehist
+    :demand t
+    :config
+    (savehist-mode))
+
+  (use-package saveplace
+    :defer 3
+    :init
+    (save-place-mode 1)
+    :custom
+    (save-place-ignore-files-regexp
+     "\\(?:COMMIT_EDITMSG\\|hg-editor-[[:alnum:]]+\\.txt\\|elpa\\|svn-commit\\.tmp\\|bzr_log\\.[[:alnum:]]+\\)$")
+    (save-place-file (concat user-emacs-directory ".my-saved-places"))
+    (save-place-forget-unreadable-files t))
+
+  (advice-add 'save-place-find-file-hook :after
+              (lambda (&rest _)
+                (when buffer-file-name (ignore-errors (recenter)))))
+#+end_src
+
+Jumps to help buffer when opened
+
+#+begin_src emacs-lisp
+(setq help-window-select t)
+#+end_src
+
 ** Emacs backups
 
 Enregistre les fichiers de backup dans un sous dossier ".emacs-backups".
@@ -433,6 +528,7 @@ Ajout de yas dans la pluparts des modes utilisés
     (python-mode . yas-minor-mode)
     :config
     (setq my/yas-snippet-dirs  (expand-file-name "snippets" user-emacs-directory))
+    (yas-reload-all)
   )
 #+end_src
 
@@ -626,7 +722,15 @@ Met en forme l'agenda d'orgmode.
               ("@Achats" . ?a)
               ("@Direction" . ?d))
             )
-
+      (setq diary-date-forms
+        '((day "/" month "[^/0-9]")
+          (day "/" month "/" year "[^0-9]")
+          (backup day " *" monthname "\\W+\\<\\([^*0-9]\\|\\([0-9]+[:aApP]\\)\\)")
+          (day " *" monthname " *" year "[^0-9:aApP]")
+          (dayname "\\W")))
+      (setq calendar-date-style 'european)
+      (setq calendar-date-display-form
+        '(day " " monthname " " year)) 
       (setq org-agenda-tags-column -100)
       (setq org-agenda-align-tags t)
 
@@ -677,6 +781,7 @@ Second block hooks the function to saving command. Every time this file will be 
     :config
     (define-key global-map "\C-cc" 'org-archive-done-tasks)
     (define-key org-mode-map (kbd "C-c l") #'my/org-create-latex-snippet)
+    (define-key org-src-mode-map (kbd "C-c l") #'org-edit-src-exit)
     (require 'org-tempo)
     (add-hook 'org-mode-hook
               (lambda ()
@@ -764,17 +869,37 @@ Après le lancement d'un fichier latex, le bloc suivant est évalué:
   
 #+begin_src emacs-lisp
   (defun my/latex-editing-parameters ()
-    (add-to-list 'LaTeX-math-list '("M-p" "partial" "" 2202))
-    (add-to-list 'LaTeX-math-list '("M-r" "overrightarrow" "" nil))
-    (add-to-list 'LaTeX-math-list '("M-:" "frac" "" nil))
-    (add-to-list 'LaTeX-math-list '("M-c" "text{c.c.}" "" nil))
-    (add-to-list 'LaTeX-math-list '("M-." "dot" "" 15))
-    (add-to-list 'LaTeX-math-list '(" " "&" "" nil))
-    (setq LaTeX-math-abbrev-prefix "&")
-    (setq TeX-electric-sub-and-superscript t)
-    (setq LaTeX-electric-left-right-brace t)
-    (setq TeX-electric-math '("$" . "$")))
+      (add-to-list 'LaTeX-math-list '("M-p" "partial" "" 2202))
+      (add-to-list 'LaTeX-math-list '("M-r" "overrightarrow" "" nil))
+      (add-to-list 'LaTeX-math-list '("M-:" "frac" "" nil))
+      (add-to-list 'LaTeX-math-list '("M-c" "text{c.c.}" "" nil))
+      (add-to-list 'LaTeX-math-list '("M-." "dot" "" 15))
+      (add-to-list 'LaTeX-math-list '(" " "&" "" nil))
+      (setq LaTeX-math-abbrev-prefix "&")
+      (setq TeX-electric-sub-and-superscript t)
+      (setq LaTeX-electric-left-right-brace t)
+      (setq TeX-electric-math '("$" . "$")))
 
+#+end_src
+
+Ajoute un comportment qui sort des derniers brackets quand appui sur tabulation
+
+#+begin_src emacs-lisp
+(defun my/tab-behavior ()
+  (interactive)
+  (cond
+   ((and (bound-and-true-p yas-minor-mode)
+         (yas-expand))
+    t)
+   ((condition-case nil
+        (progn
+          (up-list)
+          t)
+      (error nil)))
+   ((yas--snippets-at-point)
+    (yas-next-field))
+   (t
+    (indent-for-tab-command))))  
 #+end_src
 
 ** Tex flycheck customisation
@@ -797,57 +922,58 @@ Suppression de company capf dans les buffers latex qui interférent avec lsp
 *** Unités et préfixes
 
 #+begin_src emacs-lisp
-      (defvar my/si-tokens
-        '((""  . "")
-          ("Yotta" . "\\yotta")
-          ("Zetta" . "\\zetta")
-          ("Exa" . "\\exa")
-          ("Peta" . "\\peta")
-          ("Tera" . "\\tera")
-          ("Giga" . "\\giga")
-          ("Mega" . "\\mega")
-          ("kilo" . "\\kilo")
-          ("hecto" . "\\hecto")
-          ("deca" . "\\deca")
-          ("deci" . "\\deci")
-          ("centi" . "\\centi")
-          ("milli" . "\\milli")
-          ("µ micro" . "\\micro")
-          ("nano" . "\\nano")
-          ("pico" . "\\pico")
-          ("femto" . "\\femto")
-          ("atto" . "\\atto")
-          ("zepto" . "\\zepto")
-          ("yocto" . "\\yocto")
-          ("per" . "\\per")
-          ("meter"   . "\\meter")
-          ("gram"   . "\\gram")
-          ("second"   . "\\second")
-          ("Ampere"   . "\\ampere")
-          ("Kelvin"   . "\\kelvin")
-          ("mole" . "\\mole")
-          ("Candela"  . "\\candela")
-          ("Hertz"  . "\\hertz")
-          ("Newton"   . "\\newton")
-          ("Pascal"  . "\\pascal")
-          ("Joule"   . "\\joule")
-          ("Watt"   . "\\watt")
-          ("Coulomb"   . "\\coulomb")
-          ("Volt"   . "\\volt")
-          ("Farad"   . "\\farad")
-          ("Ω ohm"   . "\\ohm")
-          ("Siemens"   . "\\siemens")
-          ("Weber"  . "\\weber")
-          ("Telsa"   . "\\tesla")
-          ("Henry"   . "\\henry")
-          ("lumen"  . "\\lumen")
-          ("lux"  . "\\lux")
-          ("Becquerel"  . "\\becquerel")
-          ("Gray"  . "\\gray")
-          ("Sievert"  . "\\sievert")
-          ("katal" . "\\katal")
-          ("² squared" . "^2")
-          ("inv" . "^{-1}")))
+  (defvar my/si-tokens
+    '((""  . "")
+      ("Yotta" . "\\yotta")
+      ("Zetta" . "\\zetta")
+      ("Exa" . "\\exa")
+      ("Peta" . "\\peta")
+      ("Tera" . "\\tera")
+      ("Giga" . "\\giga")
+      ("Mega" . "\\mega")
+      ("kilo" . "\\kilo")
+      ("hecto" . "\\hecto")
+      ("deca" . "\\deca")
+      ("deci" . "\\deci")
+      ("centi" . "\\centi")
+      ("milli" . "\\milli")
+      ("hour" . "\\hour")
+      ("µ micro" . "\\micro")
+      ("nano" . "\\nano")
+      ("pico" . "\\pico")
+      ("femto" . "\\femto")
+      ("atto" . "\\atto")
+      ("zepto" . "\\zepto")
+      ("yocto" . "\\yocto")
+      ("per" . "\\per")
+      ("meter"   . "\\meter")
+      ("gram"   . "\\gram")
+      ("second"   . "\\second")
+      ("Ampere"   . "\\ampere")
+      ("Kelvin"   . "\\kelvin")
+      ("mole" . "\\mole")
+      ("Candela"  . "\\candela")
+      ("Hertz"  . "\\hertz")
+      ("Newton"   . "\\newton")
+      ("Pascal"  . "\\pascal")
+      ("Joule"   . "\\joule")
+      ("Watt"   . "\\watt")
+      ("Coulomb"   . "\\coulomb")
+      ("Volt"   . "\\volt")
+      ("Farad"   . "\\farad")
+      ("Ω ohm"   . "\\ohm")
+      ("Siemens"   . "\\siemens")
+      ("Weber"  . "\\weber")
+      ("Telsa"   . "\\tesla")
+      ("Henry"   . "\\henry")
+      ("lumen"  . "\\lumen")
+      ("lux"  . "\\lux")
+      ("Becquerel"  . "\\becquerel")
+      ("Gray"  . "\\gray")
+      ("Sievert"  . "\\sievert")
+      ("katal" . "\\katal")
+      ("² squared" . "^2")
+      ("inv" . "^{-1}")))
 #+end_src
 
 Easy insersion of values with units in text
@@ -929,21 +1055,22 @@ La fonction Create-new-LaTeX-document créer un clone d'un template latex exista
 ** Basic launch
 
 #+begin_src emacs-lisp
-      (use-package tex
-        :ensure auctex
-        :mode ("\\.tex\\'" . LaTeX-mode)
-        :hook ((LaTeX-mode . my/latex-config)
-               (LaTeX-mode . my/latex-setup)
-               (LaTeX-mode . my/latex-compilation-parameters)
-               (LaTeX-mode . my/latex-editing-parameters)
-               (LaTeX-mode . my/latex-flycheck-parameters)
-               (LaTeX-mode . my/latex-disable-company-capf)
-               (LaTeX-mode . LaTeX-math-mode))
-        :config
-        (with-eval-after-load 'latex
-          (define-key LaTeX-mode-map (kbd "C-c u") #'my/latex-insert-SI)
-          (define-key LaTeX-mode-map (kbd "C-c i") #'Latex-include-graphics))
-        )
+  (use-package tex
+    :ensure auctex
+    :mode ("\\.tex\\'" . LaTeX-mode)
+    :hook ((LaTeX-mode . my/latex-config)
+           (LaTeX-mode . my/latex-setup)
+           (LaTeX-mode . my/latex-compilation-parameters)
+           (LaTeX-mode . my/latex-editing-parameters)
+           (LaTeX-mode . my/latex-flycheck-parameters)
+           (LaTeX-mode . my/latex-disable-company-capf)
+           (LaTeX-mode . LaTeX-math-mode))
+    :config
+    (with-eval-after-load 'latex
+      (define-key LaTeX-mode-map (kbd "C-c u") #'my/latex-insert-SI)
+      (define-key LaTeX-mode-map (kbd "TAB") #'my/tab-behavior)
+      (define-key LaTeX-mode-map (kbd "C-c i") #'Latex-include-graphics))
+    )
 #+end_src
 
 
@@ -1118,11 +1245,18 @@ Prompts for a name and inserts a command for figure saving with name <name> in f
 
 #+begin_src emacs-lisp
   (defun my/black-format-current-buffer ()
-    "Format current buffer with black."
-    (interactive)
-    (when buffer-file-name
-      (shell-command (concat "black -q -l 79 \"" buffer-file-name "\""))
-      (revert-buffer t t )))
+  "Format current buffer with black."
+  (interactive)
+  (when buffer-file-name
+    (if (and (buffer-modified-p)
+             (not (y-or-n-p "Buffer modifié. Sauvegarder avant black ? ")))
+        (message "Annulé")
+      (progn
+        (when (buffer-modified-p)
+          (save-buffer))
+        (shell-command
+         (concat "black -q -l 79 \"" buffer-file-name "\""))
+        (revert-buffer t t)))))
 #+end_src
 
 *** Key mapping
@@ -1165,6 +1299,7 @@ Prompts for a name and inserts a command for figure saving with name <name> in f
     (setq lsp-enable-file-watchers nil)
     (setq lsp-pyright-python-executable-cmd "python")
     (setq lsp-enable-which-key-integration 1)
+    (setq read-process-output-max (* 4 1024 1024))
     )
 #+end_src
 

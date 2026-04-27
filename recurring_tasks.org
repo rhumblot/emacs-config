@@ -5,11 +5,12 @@ SCHEDULED: <2026-12-08 mar. +1y>
 :LAST_REPEAT: [2026-01-08 jeu. 09:24]
 :END:
 - State "DONE"       from "TODO"       [2026-01-08 jeu. 09:24]
-** TODO Faire imputation heure                                         :@Me:
-SCHEDULED: <2026-04-15 mer. +1m>
+** TODO Faire imputation heures                                        :@Me:
+SCHEDULED: <2026-05-15 ven. +1m>
 :PROPERTIES:
-:LAST_REPEAT: [2026-03-16 lun. 09:48]
+:LAST_REPEAT: [2026-04-22 mer. 10:24]
 :END:
+- State "DONE"       from "TODO"       [2026-04-22 mer. 10:24]
 - State "DONE"       from "TODO"       [2026-03-16 lun. 09:48]
 - State "DONE"       from "TODO"       [2026-02-16 lun. 09:29]
 - State "DONE"       from "TODO"       [2026-01-15 jeu. 17:34]
@@ -23,10 +24,12 @@ SCHEDULED: <2026-04-15 mer. +1m>
 - State "DONE"       from "TODO"       [2025-05-15 jeu. 17:19]
 - State "DONE"       from "TODO"       [2025-04-14 lun. 09:25]
 ** TODO Faire imputation heures                                        :@Me:
-SCHEDULED: <2026-03-25 mer. +1m>
+SCHEDULED: <2026-05-25 lun. +1m>
 :PROPERTIES:
-:LAST_REPEAT: [2026-02-25 mer. 09:24]
+:LAST_REPEAT: [2026-04-27 lun. 12:04]
 :END:
+- State "DONE"       from "TODO"       [2026-04-27 lun. 12:04]
+- State "DONE"       from "TODO"       [2026-03-25 mer. 11:58]
 - State "DONE"       from "TODO"       [2026-02-25 mer. 09:24]
 - State "DONE"       from "TODO"       [2026-01-26 lun. 08:53]
 - State "DONE"       from "TODO"       [2026-01-05 lun. 10:14]
@@ -34,10 +37,11 @@ SCHEDULED: <2026-03-25 mer. +1m>
 - State "DONE"       from "TODO"       [2025-11-27 jeu. 11:36]
 - State "DONE"       from "TODO"       [2025-11-27 jeu. 11:35]
 ** TODO Remplir fiche covoiturage
-SCHEDULED: <2026-04-01 mer. +1m>
+SCHEDULED: <2026-05-01 ven. +1m>
 :PROPERTIES:
-:LAST_REPEAT: [2026-03-02 lun. 09:19]
+:LAST_REPEAT: [2026-04-01 mer. 11:04]
 :END:
+- State "DONE"       from "TODO"       [2026-04-01 mer. 11:04]
 - State "DONE"       from "TODO"       [2026-03-02 lun. 09:19]
 - State "DONE"       from "TODO"       [2026-02-02 lun. 15:28]
 - State "DONE"       from "TODO"       [2026-01-06 mar. 09:22]

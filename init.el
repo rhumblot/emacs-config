@@ -41,6 +41,56 @@
 
 (global-auto-revert-mode t)
 
+(setq-default bidi-display-reordering 'left-to-right
+              bidi-paragraph-direction 'left-to-right)
+(setq bidi-inhibit-bpa t)
+
+(setq redisplay-skip-fontification-on-input t)
+
+(setq-default cursor-in-non-selected-windows nil)
+(setq highlight-nonselected-windows nil)
+
+(setq save-interprogram-paste-before-kill t)
+
+(setq kill-do-not-save-duplicates t)
+
+(setq window-combination-resize t)
+
+(winner-mode +1)
+
+(defun toggle-delete-other-windows ()
+  "Delete other windows in frame if any, or restore previous window config."
+  (interactive)
+  (if (and winner-mode
+           (equal (selected-window) (next-window)))
+      (winner-undo)
+    (delete-other-windows)))
+
+(global-set-key (kbd "C-x 1") #'toggle-delete-other-windows)
+
+(setq set-mark-command-repeat-pop t)
+
+(use-package savehist
+  :demand t
+  :config
+  (savehist-mode))
+
+(use-package saveplace
+  :defer 3
+  :init
+  (save-place-mode 1)
+  :custom
+  (save-place-ignore-files-regexp
+   "\\(?:COMMIT_EDITMSG\\|hg-editor-[[:alnum:]]+\\.txt\\|elpa\\|svn-commit\\.tmp\\|bzr_log\\.[[:alnum:]]+\\)$")
+  (save-place-file (concat user-emacs-directory ".my-saved-places"))
+  (save-place-forget-unreadable-files t))
+
+(advice-add 'save-place-find-file-hook :after
+            (lambda (&rest _)
+              (when buffer-file-name (ignore-errors (recenter)))))
+
+(setq help-window-select t)
+
 (let ((dir ".emacs-backups"))
   (setq auto-save-file-name-transforms `(("\\([^/]*/\\)*\\([^/]*\\)\\'" ,(concat dir "/\\2")))
         backup-directory-alist `((".*" . ,dir))))
@@ -216,6 +266,7 @@
   (python-mode . yas-minor-mode)
   :config
   (setq my/yas-snippet-dirs  (expand-file-name "snippets" user-emacs-directory))
+  (yas-reload-all)
 )
 
 (use-package flycheck
@@ -338,7 +389,15 @@
           ("@Achats" . ?a)
           ("@Direction" . ?d))
         )
-
+  (setq diary-date-forms
+    '((day "/" month "[^/0-9]")
+      (day "/" month "/" year "[^0-9]")
+      (backup day " *" monthname "\\W+\\<\\([^*0-9]\\|\\([0-9]+[:aApP]\\)\\)")
+      (day " *" monthname " *" year "[^0-9:aApP]")
+      (dayname "\\W")))
+  (setq calendar-date-style 'european)
+  (setq calendar-date-display-form
+    '(day " " monthname " " year)) 
   (setq org-agenda-tags-column -100)
   (setq org-agenda-align-tags t)
 
@@ -373,6 +432,7 @@
   :config
   (define-key global-map "\C-cc" 'org-archive-done-tasks)
   (define-key org-mode-map (kbd "C-c l") #'my/org-create-latex-snippet)
+  (define-key org-src-mode-map (kbd "C-c l") #'org-edit-src-exit)
   (require 'org-tempo)
   (add-hook 'org-mode-hook
             (lambda ()
@@ -413,16 +473,32 @@
           nil t))
 
 (defun my/latex-editing-parameters ()
-  (add-to-list 'LaTeX-math-list '("M-p" "partial" "" 2202))
-  (add-to-list 'LaTeX-math-list '("M-r" "overrightarrow" "" nil))
-  (add-to-list 'LaTeX-math-list '("M-:" "frac" "" nil))
-  (add-to-list 'LaTeX-math-list '("M-c" "text{c.c.}" "" nil))
-  (add-to-list 'LaTeX-math-list '("M-." "dot" "" 15))
-  (add-to-list 'LaTeX-math-list '(" " "&" "" nil))
-  (setq LaTeX-math-abbrev-prefix "&")
-  (setq TeX-electric-sub-and-superscript t)
-  (setq LaTeX-electric-left-right-brace t)
-  (setq TeX-electric-math '("$" . "$")))
+    (add-to-list 'LaTeX-math-list '("M-p" "partial" "" 2202))
+    (add-to-list 'LaTeX-math-list '("M-r" "overrightarrow" "" nil))
+    (add-to-list 'LaTeX-math-list '("M-:" "frac" "" nil))
+    (add-to-list 'LaTeX-math-list '("M-c" "text{c.c.}" "" nil))
+    (add-to-list 'LaTeX-math-list '("M-." "dot" "" 15))
+    (add-to-list 'LaTeX-math-list '(" " "&" "" nil))
+    (setq LaTeX-math-abbrev-prefix "&")
+    (setq TeX-electric-sub-and-superscript t)
+    (setq LaTeX-electric-left-right-brace t)
+    (setq TeX-electric-math '("$" . "$")))
+
+(defun my/tab-behavior ()
+  (interactive)
+  (cond
+   ((and (bound-and-true-p yas-minor-mode)
+         (yas-expand))
+    t)
+   ((condition-case nil
+        (progn
+          (up-list)
+          t)
+      (error nil)))
+   ((yas--snippets-at-point)
+    (yas-next-field))
+   (t
+    (indent-for-tab-command))))
 
 (defun my/latex-flycheck-parameters ()
   (setq flycheck-chktexrc "~/.chktexrc")
@@ -448,6 +524,7 @@
     ("deci" . "\\deci")
     ("centi" . "\\centi")
     ("milli" . "\\milli")
+    ("hour" . "\\hour")
     ("µ micro" . "\\micro")
     ("nano" . "\\nano")
     ("pico" . "\\pico")
@@ -555,6 +632,7 @@
   :config
   (with-eval-after-load 'latex
     (define-key LaTeX-mode-map (kbd "C-c u") #'my/latex-insert-SI)
+    (define-key LaTeX-mode-map (kbd "TAB") #'my/tab-behavior)
     (define-key LaTeX-mode-map (kbd "C-c i") #'Latex-include-graphics))
   )
 
@@ -675,11 +753,18 @@ if __name__ == \"__main__\":
   (insert "fig.savefig(Path(__file__).parent / \""name".png\", dpi=400, bbox_inches=\"tight\")"))
 
 (defun my/black-format-current-buffer ()
-  "Format current buffer with black."
-  (interactive)
-  (when buffer-file-name
-    (shell-command (concat "black -q -l 79 \"" buffer-file-name "\""))
-    (revert-buffer t t )))
+"Format current buffer with black."
+(interactive)
+(when buffer-file-name
+  (if (and (buffer-modified-p)
+           (not (y-or-n-p "Buffer modifié. Sauvegarder avant black ? ")))
+      (message "Annulé")
+    (progn
+      (when (buffer-modified-p)
+        (save-buffer))
+      (shell-command
+       (concat "black -q -l 79 \"" buffer-file-name "\""))
+      (revert-buffer t t)))))
 
 (defun my/python-set-keymaps ()
   (define-key python-mode-map (kbd "C-c M-m") 'my/python-init-script)
@@ -703,6 +788,7 @@ if __name__ == \"__main__\":
   (setq lsp-enable-file-watchers nil)
   (setq lsp-pyright-python-executable-cmd "python")
   (setq lsp-enable-which-key-integration 1)
+  (setq read-process-output-max (* 4 1024 1024))
   )
 
 (defun my/lsp-session-localisation ()
