@@ -754,6 +754,24 @@ Definition d'une fonction qui archive toutes les sous-tâches marquée "DONE" du
     )
 #+end_src
 
+Ajoute des fichiers archives dans les fichier suivi (pour permettre de conserver l'historique des taches effectuées
+
+
+#+begin_src emacs-lisp
+(defun my/org-archive-file-name (file)
+  (expand-file-name ".emacs-backups/archives.org"
+                    (file-name-directory file)))
+
+(defun my/org-include-archives-in-agenda ()
+  (setq org-agenda-files
+        (delete-dups
+         (append org-agenda-files
+                 (delq nil
+                       (mapcar (lambda (f)
+                                 (let ((a (my/org-archive-file-name f)))
+                                   (when (file-exists-p a) a)))
+                               org-agenda-files))))))
+#+end_src
 ** Auto-tangle Configuration files
 
 first function checks if this buffer fiile name is equal to the assumed location of the buffer. If yes, then disable tangle confirmation and then tangles the file to destination file (in header).
@@ -777,6 +795,7 @@ Second block hooks the function to saving command. Every time this file will be 
     :hook (
            (org-mode . my/org-mode-setup)
            (org-mode . my/org-mode-agenda-setup)
+           (org-mode . my/org-include-archives-in-agenda)
            (org-mode . my/org-mode-editing-setup))
     :config
     (define-key global-map "\C-cc" 'org-archive-done-tasks)

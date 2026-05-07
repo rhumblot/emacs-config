@@ -37,10 +37,11 @@ SCHEDULED: <2026-05-25 lun. +1m>
 - State "DONE"       from "TODO"       [2025-11-27 jeu. 11:36]
 - State "DONE"       from "TODO"       [2025-11-27 jeu. 11:35]
 ** TODO Remplir fiche covoiturage
-SCHEDULED: <2026-05-01 ven. +1m>
+SCHEDULED: <2026-06-01 lun. +1m>
 :PROPERTIES:
-:LAST_REPEAT: [2026-04-01 mer. 11:04]
+:LAST_REPEAT: [2026-05-04 lun. 10:04]
 :END:
+- State "DONE"       from "TODO"       [2026-05-04 lun. 10:04]
 - State "DONE"       from "TODO"       [2026-04-01 mer. 11:04]
 - State "DONE"       from "TODO"       [2026-03-02 lun. 09:19]
 - State "DONE"       from "TODO"       [2026-02-02 lun. 15:28]

@@ -416,6 +416,20 @@
    "/DONE" 'tree)
   )
 
+(defun my/org-archive-file-name (file)
+  (expand-file-name ".emacs-backups/archives.org"
+                    (file-name-directory file)))
+
+(defun my/org-include-archives-in-agenda ()
+  (setq org-agenda-files
+        (delete-dups
+         (append org-agenda-files
+                 (delq nil
+                       (mapcar (lambda (f)
+                                 (let ((a (my/org-archive-file-name f)))
+                                   (when (file-exists-p a) a)))
+                               org-agenda-files))))))
+
 (defun my/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)
                       (expand-file-name "~/.emacs.d/emacs.org"))
@@ -428,6 +442,7 @@
   :hook (
          (org-mode . my/org-mode-setup)
          (org-mode . my/org-mode-agenda-setup)
+         (org-mode . my/org-include-archives-in-agenda)
          (org-mode . my/org-mode-editing-setup))
   :config
   (define-key global-map "\C-cc" 'org-archive-done-tasks)
